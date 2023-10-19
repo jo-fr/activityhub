@@ -1,0 +1,4 @@
+BEGIN;
+DROP TABLE IF EXISTS schema_migrations;
+DROP SCHEMA IF EXISTS activity_pub;
+COMMIT;
