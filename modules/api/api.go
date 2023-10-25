@@ -85,5 +85,6 @@ func (a *API) registerRoutes() {
 	})
 
 	a.Get("/.well-known/webfinger", a.getWebfinger())
+	a.Get("/{actorName}", a.getActor())
 
 }

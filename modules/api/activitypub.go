@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 )
 
@@ -19,4 +20,20 @@ func (a *API) getWebfinger() http.HandlerFunc {
 
 		render.Success(r.Context(), webfinger, http.StatusOK, w, a.log)
 	}
+}
+
+func (a *API) getActor() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		actorName := chi.URLParam(r, "actorName")
+
+		actor, err := a.activitypub.GetActor(actorName)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		render.Success(r.Context(), actor, http.StatusOK, w, a.log)
+	}
+
 }
