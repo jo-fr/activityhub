@@ -53,7 +53,7 @@ func parsePrivateKey(privateKeyPem []byte) (*rsa.PrivateKey, error) {
 func createSignatureString(bodyDigest string, hostURL string, headers string) string {
 	signatureString := "(request-target): post /users/username/inbox\n"
 	signatureString += fmt.Sprintf("host: %s\n", hostURL)
-	signatureString += fmt.Sprintf("date:%s\n", time.Now().UTC().Format(http.TimeFormat))
+	signatureString += fmt.Sprintf("date: %s\n", time.Now().UTC().Format(http.TimeFormat))
 	signatureString += fmt.Sprintf("digest: %s\n", bodyDigest)
 	return signatureString
 }
