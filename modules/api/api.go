@@ -8,6 +8,7 @@ import (
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 
+	"github.com/jo-fr/activityhub/modules/activitypub"
 	"github.com/jo-fr/activityhub/pkg/log"
 
 	"go.uber.org/fx"
@@ -20,13 +21,16 @@ var Module = fx.Options(
 type API struct {
 	*chi.Mux
 	log *log.Logger
+
+	activitypub *activitypub.Handler
 }
 
-func ProvideAPI(lc fx.Lifecycle, logger *log.Logger) *API {
+func ProvideAPI(lc fx.Lifecycle, logger *log.Logger, activitypub *activitypub.Handler) *API {
 
 	api := &API{
-		Mux: chi.NewRouter(),
-		log: logger,
+		Mux:         chi.NewRouter(),
+		log:         logger,
+		activitypub: activitypub,
 	}
 
 	api.registerMiddlewares()
@@ -77,5 +81,7 @@ func (a *API) registerRoutes() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
+
+	a.Get("/.well-known/webfinger", a.getWebfinger())
 
 }
