@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/jo-fr/activityhub/modules/activitypub"
+	"github.com/jo-fr/activityhub/modules/api/internal/middleware"
 	"github.com/jo-fr/activityhub/pkg/log"
 
 	"go.uber.org/fx"
@@ -33,7 +34,7 @@ func ProvideAPI(lc fx.Lifecycle, logger *log.Logger, activitypub *activitypub.Ha
 		activitypub: activitypub,
 	}
 
-	api.registerMiddlewares()
+	api.registerMiddlewares(logger)
 	api.registerRoutes()
 
 	registerHooks(lc, api, logger)
@@ -67,10 +68,11 @@ func registerHooks(lc fx.Lifecycle, api *API, logger *log.Logger) {
 	)
 }
 
-func (a *API) registerMiddlewares() {
+func (a *API) registerMiddlewares(l *log.Logger) {
 	a.Use(chiMiddleware.RequestID)
-	a.Use(chiMiddleware.Logger)
+	a.Use(middleware.Logger(l))
 	a.Use(chiMiddleware.Recoverer)
+
 	// add default header
 	a.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
 
