@@ -3,10 +3,16 @@ package activitypub
 import (
 	"fmt"
 
+	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys"
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/models"
 )
 
 func (h *Handler) GetActor(actor string) (models.Actor, error) {
+
+	keys, err := keys.GenerateRSAKeyPair(2048)
+	if err != nil {
+		return models.Actor{}, err
+	}
 
 	a := models.Actor{
 		Context: []string{
@@ -20,7 +26,7 @@ func (h *Handler) GetActor(actor string) (models.Actor, error) {
 		PublicKey: models.PublicKey{
 			ID:           fmt.Sprintf("%s/%s#main-key", h.hostURL, actor),
 			Owner:        fmt.Sprintf("%s/%s", h.hostURL, actor),
-			PublicKeyPem: "--tbd---",
+			PublicKeyPem: string(keys.PubKeyPeM),
 		},
 	}
 
