@@ -28,7 +28,7 @@ func CreateSignature(bodyDigest string, hostURL string, keyId string, privateKey
 		return "", err
 	}
 
-	signatureString := createSignatureString(bodyDigest, hostURL, signatureHeaders)
+	signatureString := createSignatureString(bodyDigest, http.MethodPost, "/users/test/inbox", hostURL, signatureHeaders)
 	signatureBytes, err := signWithRSA(key, signatureString)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to sign signature string")
@@ -50,8 +50,8 @@ func parsePrivateKey(privateKeyPem []byte) (*rsa.PrivateKey, error) {
 	return privKey, nil
 }
 
-func createSignatureString(bodyDigest string, hostURL string, headers string) string {
-	signatureString := "(request-target): post /users/username/inbox\n"
+func createSignatureString(bodyDigest string, method string, target string, hostURL string, headers string) string {
+	signatureString := fmt.Sprintf("(request-target): %s %s\n", method, target)
 	signatureString += fmt.Sprintf("host: %s\n", hostURL)
 	signatureString += fmt.Sprintf("date: %s\n", time.Now().UTC().Format(http.TimeFormat))
 	signatureString += fmt.Sprintf("digest: %s\n", bodyDigest)
