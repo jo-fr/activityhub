@@ -2,17 +2,21 @@ package activitypub
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys"
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/models"
 )
 
-func (h *Handler) GetActor(actor string) (models.Actor, error) {
-
+var cert = func() *models.KeyPair {
 	keys, err := keys.GenerateRSAKeyPair(2048)
 	if err != nil {
-		return models.Actor{}, err
+		log.Fatal(err)
 	}
+	return keys
+}
+
+func (h *Handler) GetActor(actor string) (models.Actor, error) {
 
 	a := models.Actor{
 		Context: []string{
@@ -26,7 +30,7 @@ func (h *Handler) GetActor(actor string) (models.Actor, error) {
 		PublicKey: models.PublicKey{
 			ID:           fmt.Sprintf("%s/%s#main-key", h.hostURL, actor),
 			Owner:        fmt.Sprintf("%s/%s", h.hostURL, actor),
-			PublicKeyPem: string(keys.PubKeyPeM),
+			PublicKeyPem: string(cert().PubKeyPEM),
 		},
 	}
 

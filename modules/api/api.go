@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"io"
 
 	"net/http"
 
@@ -10,6 +12,7 @@ import (
 
 	"github.com/jo-fr/activityhub/modules/activitypub"
 	"github.com/jo-fr/activityhub/modules/api/internal/middleware"
+	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/log"
 
 	"go.uber.org/fx"
@@ -87,4 +90,40 @@ func (a *API) registerRoutes() {
 	a.Get("/.well-known/webfinger", a.getWebfinger())
 	a.Get("/{actorName}", a.getActor())
 
+	a.Post("/inbox", a.inbox())
+	a.Get("/inbox", a.inbox())
+
+}
+
+func (a *API) inbox() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		actorName := chi.URLParam(r, "actorName")
+		a.log.Info("Actor name: " + actorName)
+
+		body, err := readBodyToString(r.Body)
+		if err != nil {
+			a.log.Fatal(err)
+		}
+
+		a.log.Info("Request body: " + body)
+
+		actor, err := a.activitypub.GetActor(actorName)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		render.Success(r.Context(), actor, http.StatusOK, w, a.log)
+
+	}
+}
+func readBodyToString(body io.ReadCloser) (string, error) {
+	defer body.Close()
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(body)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
