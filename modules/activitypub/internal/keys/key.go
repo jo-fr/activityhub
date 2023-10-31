@@ -20,7 +20,7 @@ func GenerateRSAKeyPair(bitSize int) (*models.KeyPair, error) {
 
 	return &models.KeyPair{
 		PrivKeyPEM: encodePrivateKeyToPEM(privateKey),
-		PubKeyPeM:  encodePublicKeyToPEM(&privateKey.PublicKey),
+		PubKeyPEM:  encodePublicKeyToPEM(&privateKey.PublicKey),
 	}, nil
 }
 
