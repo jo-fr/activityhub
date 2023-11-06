@@ -31,7 +31,7 @@ func (e AnnotatedError) HTTPStatusCode() int {
 	switch e.Type {
 	case TypeNotFound:
 		return http.StatusNotFound
-	case TypeInvalidRequestBody, TypeMissingHeader:
+	case TypeInvalidRequestBody, TypeMissingHeader, TypeBadRequest:
 		return http.StatusBadRequest
 
 	default:

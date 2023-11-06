@@ -13,5 +13,6 @@ type ErrorType string
 const (
 	TypeNotFound           ErrorType = "not_found"
 	TypeInvalidRequestBody ErrorType = "invalid_request_body"
+	TypeBadRequest         ErrorType = "bad_request"
 	TypeMissingHeader      ErrorType = "missing_header"
 )
