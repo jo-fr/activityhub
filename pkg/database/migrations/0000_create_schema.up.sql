@@ -1,3 +1,3 @@
 BEGIN;
-    CREATE SCHEMA IF NOT EXISTS activity_pub;
+    CREATE SCHEMA IF NOT EXISTS activityhub;
 COMMIT;

@@ -25,6 +25,7 @@ var Module = fx.Options(
 
 const (
 	migrateFilesDir     = "pkg/database/migrations"
+	databaseName        = "activityhub"
 	schemaName          = "activityhub"
 	migrationsTableName = "schema_migrations"
 )
@@ -43,7 +44,7 @@ func ProvideDatabase(lc fx.Lifecycle, config config.Config, logger *log.Logger) 
 		return nil, errors.Wrap(err, "failed to connect to database")
 	}
 
-	if err := runMigrations(_db); err != nil {
+	if err := runMigrations(_db, dbConfig.Database); err != nil {
 		return nil, errors.Wrap(err, "failed to run migrations")
 	}
 
@@ -73,7 +74,7 @@ func registerHooks(lc fx.Lifecycle, db *Database, logger *log.Logger) {
 	)
 }
 
-func runMigrations(db *gorm.DB) error {
+func runMigrations(db *gorm.DB, dbName string) error {
 
 	// schema needs to be created before migrations can be run
 	if err := db.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s;", schemaName)).Error; err != nil {
@@ -106,10 +107,7 @@ func runMigrations(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to get migrations file path")
 	}
 
-	m, err := migrate.NewWithDatabaseInstance(
-		dir,
-		"activity_pub", driver)
-
+	m, err := migrate.NewWithDatabaseInstance(dir, dbName, driver)
 	if err != nil {
 		return errors.Wrap(err, "failed to create db migration")
 	}
