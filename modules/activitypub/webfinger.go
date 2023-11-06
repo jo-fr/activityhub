@@ -4,12 +4,26 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/models"
+	"github.com/jo-fr/activityhub/modules/activitypub/models"
+	"github.com/jo-fr/activityhub/pkg/errutil"
+)
+
+var (
+	ErrWrongURI    = errutil.NewError(errutil.TypeInvalidRequestBody, "uri of actor and host do not match")
+	ErrWrongFormat = errutil.NewError(errutil.TypeBadRequest, "no acct: in resource")
 )
 
 func (h *Handler) GetWebfinger(resource string) (models.Webfinger, error) {
 
-	username, err := extractActor(resource)
+	store := h.db
+
+	username, err := validateAndExtractActor(h.hostURL, resource)
+	if err != nil {
+		return models.Webfinger{}, err
+	}
+
+	var acc models.Account
+	err = store.First(&acc, "preferred_username = ?", username).Error
 	if err != nil {
 		return models.Webfinger{}, err
 	}
@@ -28,13 +42,18 @@ func (h *Handler) GetWebfinger(resource string) (models.Webfinger, error) {
 	return webfinger, nil
 }
 
-func extractActor(resource string) (string, error) {
+func validateAndExtractActor(hostURL string, resource string) (string, error) {
 	if !strings.Contains(resource, "acct:") {
-		return "", fmt.Errorf("no acct: in resource")
+		return "", ErrWrongFormat
 	}
 
-	actorEmail := strings.Split(resource, "acct:")[1]
-	actor := strings.Split(actorEmail, "@")[0]
+	actor := strings.Split(resource, "acct:")[1]
+	username := strings.Split(actor, "@")[0]
+	uri := strings.Split(actor, "@")[1]
 
-	return actor, nil
+	if uri != hostURL {
+		return "", ErrWrongURI
+	}
+
+	return username, nil
 }
