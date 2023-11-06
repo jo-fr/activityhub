@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	model "github.com/jo-fr/activityhub/modules/api/internal/externalmodel"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 )
 
@@ -33,7 +34,7 @@ func (a *API) getActor() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), actor, http.StatusOK, w, a.log)
+		render.Success(r.Context(), model.ExternalActor(a.hostURL, actor), http.StatusOK, w, a.log)
 	}
 
 }

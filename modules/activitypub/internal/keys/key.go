@@ -7,7 +7,7 @@ import (
 	"encoding/pem"
 	"log"
 
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/models"
+	"github.com/jo-fr/activityhub/modules/activitypub/models"
 	"github.com/pkg/errors"
 )
 

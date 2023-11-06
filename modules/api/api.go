@@ -13,6 +13,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/activitypub"
 	"github.com/jo-fr/activityhub/modules/api/internal/middleware"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
+	"github.com/jo-fr/activityhub/pkg/config"
 	"github.com/jo-fr/activityhub/pkg/log"
 
 	"go.uber.org/fx"
@@ -24,16 +25,18 @@ var Module = fx.Options(
 
 type API struct {
 	*chi.Mux
-	log *log.Logger
+	log     *log.Logger
+	hostURL string
 
 	activitypub *activitypub.Handler
 }
 
-func ProvideAPI(lc fx.Lifecycle, logger *log.Logger, activitypub *activitypub.Handler) *API {
+func ProvideAPI(lc fx.Lifecycle, config config.Config, logger *log.Logger, activitypub *activitypub.Handler) *API {
 
 	api := &API{
 		Mux:         chi.NewRouter(),
 		log:         logger,
+		hostURL:     config.HostURL,
 		activitypub: activitypub,
 	}
 

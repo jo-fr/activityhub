@@ -1,38 +1,15 @@
 package activitypub
 
 import (
-	"fmt"
-	"log"
-
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys"
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/models"
+	"github.com/jo-fr/activityhub/modules/activitypub/models"
 )
 
-var cert = func() *models.KeyPair {
-	keys, err := keys.GenerateRSAKeyPair(2048)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return keys
-}
+func (h *Handler) GetActor(actor string) (models.Account, error) {
 
-func (h *Handler) GetActor(actor string) (models.Actor, error) {
-
-	a := models.Actor{
-		Context: []string{
-			"https://www.w3.org/ns/activitystreams",
-			"https://w3id.org/security/v1",
-		},
-		ID:                fmt.Sprintf("%s/%s", h.hostURL, actor),
-		Type:              "Person",
-		PreferredUsername: actor,
-		Inbox:             fmt.Sprintf("%s/inbox", h.hostURL),
-		PublicKey: models.PublicKey{
-			ID:           fmt.Sprintf("%s/%s#main-key", h.hostURL, actor),
-			Owner:        fmt.Sprintf("%s/%s", h.hostURL, actor),
-			PublicKeyPem: string(cert().PubKeyPEM),
-		},
+	var acc models.Account
+	if err := h.db.First(&acc, "preferred_username = ?", actor).Error; err != nil {
+		return models.Account{}, err
 	}
 
-	return a, nil
+	return acc, nil
 }
