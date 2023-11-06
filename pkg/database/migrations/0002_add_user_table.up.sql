@@ -7,8 +7,8 @@ BEGIN;
         preferred_username VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
         summary VARCHAR(255) NOT NULL,
-        private_key VARCHAR(2048),
-        public_key VARCHAR(2048)
+        private_key BYTEA NOT NULL,
+        public_key BYTEA NOT NULL
     );
 
     CREATE INDEX IF NOT EXISTS account_deleted_at_idx ON activityhub.account (deleted_at);
