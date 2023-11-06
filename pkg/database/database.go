@@ -47,6 +47,7 @@ func ProvideDatabase(lc fx.Lifecycle, config config.Config, logger *log.Logger) 
 	if err := runMigrations(_db, dbConfig.Database); err != nil {
 		return nil, errors.Wrap(err, "failed to run migrations")
 	}
+	logger.Info("migrations ran successfully")
 
 	db := &Database{_db}
 
@@ -116,6 +117,7 @@ func runMigrations(db *gorm.DB, dbName string) error {
 	if err != nil && err != migrate.ErrNoChange {
 		return errors.Wrap(err, "failed to run db migration")
 	}
+	fmt.Println(err)
 
 	return nil
 }
