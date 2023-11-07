@@ -11,6 +11,8 @@ type Actor struct {
 	ID                string    `json:"id"`
 	Type              string    `json:"type"`
 	PreferredUsername string    `json:"preferredUsername"`
+	Name              string    `json:"name"`
+	Summary           string    `json:"summary"`
 	Inbox             string    `json:"inbox"`
 	PublicKey         PublicKey `json:"publicKey"`
 }
@@ -29,13 +31,16 @@ func ExternalActor(hostURL string, acc models.Account) Actor {
 			"https://www.w3.org/ns/activitystreams",
 			"https://w3id.org/security/v1",
 		},
-		ID:                fmt.Sprintf("%s/%s", hostURL, username),
+		ID:                fmt.Sprintf("https://%s/%s", hostURL, username),
 		Type:              "Person",
 		PreferredUsername: username,
-		Inbox:             fmt.Sprintf("%s/%s/inbox", hostURL, username),
+		Name:              acc.Name,
+		Summary:           acc.Summary,
+
+		Inbox: fmt.Sprintf("https://%s/%s/inbox", hostURL, username),
 		PublicKey: PublicKey{
-			ID:           fmt.Sprintf("%s/%s#main-key", hostURL, username),
-			Owner:        fmt.Sprintf("%s/%s", hostURL, username),
+			ID:           fmt.Sprintf("https://%s/%s#main-key", hostURL, username),
+			Owner:        fmt.Sprintf("https://%s/%s", hostURL, username),
 			PublicKeyPem: string(acc.PublicKey),
 		},
 	}
