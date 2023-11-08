@@ -10,6 +10,8 @@ type Actor struct {
 	Context           []string  `json:"@context"`
 	ID                string    `json:"id"`
 	Type              string    `json:"type"`
+	Following         string    `json:"following"`
+	Followers         string    `json:"followers"`
 	PreferredUsername string    `json:"preferredUsername"`
 	Name              string    `json:"name"`
 	Summary           string    `json:"summary"`
@@ -33,6 +35,8 @@ func ExternalActor(hostURL string, acc models.Account) Actor {
 		},
 		ID:                fmt.Sprintf("https://%s/%s", hostURL, username),
 		Type:              "Person",
+		Following:         fmt.Sprintf("https://%s/%s/following", hostURL, username),
+		Followers:         fmt.Sprintf("https://%s/%s/followers", hostURL, username),
 		PreferredUsername: username,
 		Name:              acc.Name,
 		Summary:           acc.Summary,

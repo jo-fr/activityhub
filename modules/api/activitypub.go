@@ -1,6 +1,9 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -51,6 +54,85 @@ func (a *API) getActor() http.HandlerFunc {
 		render.Success(r.Context(), model.ExternalActor(a.hostURL, actor), http.StatusOK, w, a.log)
 	}
 
+}
+
+func (a *API) ReceivceActivity() http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		a.log.Info(1)
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+		a.log.Info(2)
+		var activity model.Activity
+		if err := json.Unmarshal(body, &activity); err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		a.log.Info(activity)
+
+		_, err = a.activitypub.ReceiveInboxActivity(r.Context(), activity.Actor, activity.Object, activity.Type)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+		a.log.Info(4)
+
+		render.Success(r.Context(), nil, http.StatusOK, w, a.log)
+	}
+
+}
+
+type OrderedCollection struct {
+	Context      string   `json:"@context"`
+	ID           string   `json:"id"`
+	Type         string   `json:"type"`
+	TotalItems   int      `json:"totalItems"`
+	OrderedItems []string `json:"orderedItems"`
+}
+
+func (a *API) FollowingEndpoint() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		following := OrderedCollection{
+			Context:    "https://www.w3.org/ns/activitystreams",
+			ID:         fmt.Sprintf("https://%s/users/joni/following", a.hostURL),
+			Type:       "OrderedCollection",
+			TotalItems: 4,
+			OrderedItems: []string{
+				"https://tldr.nettime.org/users/tante",
+				"https://social.hetzel.net/users/timo",
+				"https://social.rebellion.global/users/ScientistRebellion",
+				"https://social.network.europa.eu/users/EU_Commission",
+			},
+		}
+
+		render.Success(r.Context(), following, http.StatusOK, w, a.log)
+	}
+}
+
+func (a *API) FollowersEndpoint() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		followers := OrderedCollection{
+			Context:    "https://www.w3.org/ns/activitystreams",
+			ID:         fmt.Sprintf("https://%s/users/joni/followers", a.hostURL),
+			Type:       "OrderedCollection",
+			TotalItems: 4,
+			OrderedItems: []string{
+				"https://tldr.nettime.org/users/tante",
+				"https://social.hetzel.net/users/timo",
+				"https://social.rebellion.global/users/ScientistRebellion",
+				"https://social.network.europa.eu/users/EU_Commission",
+			},
+		}
+
+		render.Success(r.Context(), followers, http.StatusOK, w, a.log)
+	}
 }
 
 func validateAndExtractUsername(hostURL string, resource string) (string, error) {

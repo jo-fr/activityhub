@@ -93,7 +93,9 @@ func (a *API) registerRoutes() {
 	a.Get("/.well-known/webfinger", a.getWebfinger())
 	a.Get("/{actorName}", a.getActor())
 
-	a.Post("/inbox", a.inbox())
+	a.Post("/{actorName}/inbox", a.ReceivceActivity())
+	a.Get("/{actorName}/following", a.FollowingEndpoint())
+	a.Get("/{actorName}/followers", a.FollowersEndpoint())
 	a.Get("/inbox", a.inbox())
 
 }
