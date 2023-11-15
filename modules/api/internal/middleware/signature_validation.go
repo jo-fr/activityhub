@@ -3,9 +3,7 @@ package middleware
 import (
 	"crypto"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 
@@ -18,6 +16,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/log"
+	"github.com/jo-fr/activityhub/pkg/util"
 	"github.com/pkg/errors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -29,9 +28,8 @@ var (
 	ErrSignatureNotValid      = errutil.NewError(errutil.TypeBadRequest, "signature not valid")
 )
 
-// example Signature header:
+// ValidateSignature validates the signature header of the request. The signature header is expected to be in the following format:
 // Signature: keyId="https://my-example.com/actor#main-key",headers="(request-target) host date",signature="Y2FiYW...IxNGRiZDk4ZA=="
-
 func ValidateSignature(log *log.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -48,7 +46,7 @@ func ValidateSignature(log *log.Logger) func(http.Handler) http.Handler {
 
 			keyID := signatureHeaderMap["keyId"]
 			headers := signatureHeaderMap["headers"]
-			signatureBytes, _ := base64.StdEncoding.DecodeString(signatureHeaderMap["signature"])
+			signatureBytes, _ := util.DecodeBase64(signatureHeaderMap["signature"])
 
 			actor, err := fetchActor(keyID)
 			if err != nil {
@@ -62,8 +60,8 @@ func ValidateSignature(log *log.Logger) func(http.Handler) http.Handler {
 				return
 			}
 
-			comparisonStrings := buildComparisonString(request, headers)
-			comparisonHash := calculateHash(comparisonStrings)
+			comparisonString := buildComparisonString(request, headers)
+			comparisonHash := util.HashSHA256(comparisonString)
 
 			if err = verifySignature(rsaPubKey, signatureBytes, comparisonHash); err != nil {
 				render.Error(r.Context(), ErrSignatureNotValid, rw, log)
@@ -109,13 +107,6 @@ func buildComparisonString(request *http.Request, headers string) string {
 	signatureString := strings.Join(comparisonStrings, "\n")
 
 	return signatureString
-}
-
-func calculateHash(comparisonString string) []byte {
-	hasher := sha256.New()
-	hasher.Write([]byte(comparisonString))
-
-	return hasher.Sum(nil)
 }
 
 func verifySignature(rsaPubKey *rsa.PublicKey, signatureBytes []byte, comparisonHash []byte) error {

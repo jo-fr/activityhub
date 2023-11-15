@@ -97,6 +97,7 @@ func (a *API) registerRoutes() {
 	a.Get("/{actorName}/followers", a.FollowersEndpoint())
 	a.Get("/inbox", a.inbox())
 
+	// protected routes that need a signature header
 	a.Group(func(r chi.Router) {
 		r.Use(middleware.ValidateSignature(a.log))
 		a.Post("/{actorName}/inbox", a.ReceivceActivity())
