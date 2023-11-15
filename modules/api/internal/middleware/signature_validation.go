@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,12 +62,49 @@ func ValidateSignature(next http.Handler) http.Handler {
 	})
 }
 
+func Validate(r *http.Request) error {
+	request := r
+
+	// parse header
+	signatureHeader := request.Header.Get("Signature")
+	if signatureHeader == "" {
+		return errors.New("no signature header")
+	}
+
+	signatureHeaderMap := parseSignatureHeader(signatureHeader)
+
+	keyID := signatureHeaderMap["keyId"]
+	headers := signatureHeaderMap["headers"]
+	signatureBytes, err := base64.StdEncoding.DecodeString(signatureHeaderMap["signature"])
+	if err != nil {
+		return err
+	}
+
+	actor, err := fetchActor(keyID)
+	if err != nil {
+		return err
+	}
+
+	rsaPubKey, err := parsePublicKey(actor)
+	if err != nil {
+		return err
+	}
+
+	comparisonStrings := buildComparisonStrings(request, headers)
+	comparisonHash := calculateHash(comparisonStrings)
+
+	if err = verifySignature(rsaPubKey, signatureBytes, comparisonHash); err != nil {
+		return err
+	}
+	return nil
+}
+
 func parseSignatureHeader(signatureHeader string) map[string]string {
 	parts := strings.Split(signatureHeader, ",")
 	headerMap := make(map[string]string)
 
 	for _, pair := range parts {
-		keyValue := strings.Split(pair, "=")
+		keyValue := strings.SplitN(pair, "=", 2)
 		key := strings.Trim(keyValue[0], " \t\"")
 		value := strings.Trim(keyValue[1], " \t\"")
 		headerMap[key] = value
@@ -75,28 +113,32 @@ func parseSignatureHeader(signatureHeader string) map[string]string {
 	return headerMap
 }
 
-func buildComparisonStrings(request *http.Request, headers string) []string {
+func buildComparisonStrings(request *http.Request, headers string) string {
 	signedHeaders := strings.Split(headers, " ")
-
 	var comparisonStrings []string
+
 	for _, signedHeaderName := range signedHeaders {
-		if signedHeaderName == "(request-target)" {
-			comparisonStrings = append(comparisonStrings, "(request-target): post /inbox")
-		} else {
+		switch signedHeaderName {
+		case "(request-target)":
+			comparisonStrings = append(comparisonStrings, "(request-target): "+strings.ToLower(request.Method)+" "+request.URL.Path)
+		case "host":
+			comparisonStrings = append(comparisonStrings, "host: "+request.Host)
+		default:
 			capitalizedHeaderName := cases.Title(language.AmericanEnglish).String(strings.ToLower(signedHeaderName))
 			headerValue := request.Header.Get(capitalizedHeaderName)
 			comparisonStrings = append(comparisonStrings, fmt.Sprintf("%s: %s", signedHeaderName, headerValue))
 		}
 	}
 
-	return comparisonStrings
+	signatureString := strings.Join(comparisonStrings, "\n")
+
+	return signatureString
 }
 
-func calculateHash(comparisonStrings []string) []byte {
+func calculateHash(comparisonString string) []byte {
 	hasher := sha256.New()
-	for _, s := range comparisonStrings {
-		hasher.Write([]byte(s))
-	}
+	hasher.Write([]byte(comparisonString))
+
 	return hasher.Sum(nil)
 }
 
@@ -105,7 +147,16 @@ func verifySignature(rsaPubKey *rsa.PublicKey, signatureBytes []byte, comparison
 }
 
 func fetchActor(keyID string) (map[string]interface{}, error) {
-	response, err := http.Get(keyID)
+
+	req, err := http.NewRequest("GET", keyID, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{}
+
+	response, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
