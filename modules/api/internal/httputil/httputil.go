@@ -9,8 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// UnmarshalBody unmarshals the request body into the given type. The request body is then reset to its original state.
 func UnmarshalBody[T any](r *http.Request) (T, error) {
-
 	var v T
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
