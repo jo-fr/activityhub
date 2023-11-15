@@ -1,15 +1,13 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	model "github.com/jo-fr/activityhub/modules/api/internal/externalmodel"
-	"github.com/jo-fr/activityhub/modules/api/internal/middleware"
+	"github.com/jo-fr/activityhub/modules/api/internal/httputil"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 )
@@ -60,24 +58,8 @@ func (a *API) getActor() http.HandlerFunc {
 func (a *API) ReceivceActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		body, err := io.ReadAll(r.Body)
+		activity, err := httputil.UnmarshalBody[model.Activity](r)
 		if err != nil {
-			render.Error(r.Context(), err, w, a.log)
-			return
-		}
-
-		for k, v := range r.Header {
-			a.log.Info(k, v)
-		}
-
-		if err := middleware.Validate(r); err != nil {
-			render.Error(r.Context(), err, w, a.log)
-			return
-		}
-		a.log.Info("valid")
-
-		var activity model.Activity
-		if err := json.Unmarshal(body, &activity); err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
 		}
