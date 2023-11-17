@@ -29,7 +29,7 @@ func (a *API) getWebfinger() http.HandlerFunc {
 			return
 		}
 
-		actor, err := a.activitypub.GetActor(username)
+		actor, err := a.activitypub.GetActor(r.Context(), username)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
@@ -44,7 +44,7 @@ func (a *API) getActor() http.HandlerFunc {
 
 		actorName := chi.URLParam(r, "actorName")
 
-		actor, err := a.activitypub.GetActor(actorName)
+		actor, err := a.activitypub.GetActor(r.Context(), actorName)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return

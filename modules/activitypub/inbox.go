@@ -5,28 +5,31 @@ import (
 	"strings"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 func (h *Handler) ReceiveInboxActivity(ctx context.Context, actor string, object string, activityType string) (models.Follower, error) {
 
 	accountName := getAccountFromURI(object)
-
-	var account models.Account
-	if err := h.db.First(&account, "preferred_username = ?", accountName).Error; err != nil {
-		return models.Follower{}, err
+	account, err := h.store.GetAccoutByUsername(ctx, accountName)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.Follower{}, ErrActorNotFound
+		}
+		return models.Follower{}, errors.Wrap(err, "failed to get actor from db")
 	}
 
-	follower := models.Follower{
-		AccountIDFollowed:   account.ID,
-		AccountURIFollowing: actor,
+	follow, err := h.store.CreateFollow(ctx, account.ID, object)
+	if err != nil {
+		return models.Follower{}, errors.Wrap(err, "failed to create follow")
 	}
 
-	if err := h.db.Create(&follower).Error; err != nil {
-		return models.Follower{}, err
-	}
-
-	return follower, nil
+	return follow, nil
 }
+
+// getAccountFromURI returns the account name from an URI
+// e.g. "https://example.com/users/account" -> "account"
 func getAccountFromURI(uri string) string {
 	// Split the URI by "/"
 	parts := strings.Split(uri, "/")

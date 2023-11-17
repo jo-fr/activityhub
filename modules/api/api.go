@@ -1,9 +1,7 @@
 package api
 
 import (
-	"bytes"
 	"context"
-	"io"
 
 	"net/http"
 
@@ -12,7 +10,6 @@ import (
 
 	"github.com/jo-fr/activityhub/modules/activitypub"
 	"github.com/jo-fr/activityhub/modules/api/internal/middleware"
-	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/config"
 	"github.com/jo-fr/activityhub/pkg/log"
 
@@ -95,7 +92,6 @@ func (a *API) registerRoutes() {
 
 	a.Get("/{actorName}/following", a.FollowingEndpoint())
 	a.Get("/{actorName}/followers", a.FollowersEndpoint())
-	a.Get("/inbox", a.inbox())
 
 	// protected routes that need a signature header
 	a.Group(func(r chi.Router) {
@@ -103,37 +99,4 @@ func (a *API) registerRoutes() {
 		a.Post("/{actorName}/inbox", a.ReceivceActivity())
 	})
 
-}
-
-func (a *API) inbox() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		actorName := chi.URLParam(r, "actorName")
-		a.log.Info("Actor name: " + actorName)
-
-		body, err := readBodyToString(r.Body)
-		if err != nil {
-			a.log.Fatal(err)
-		}
-
-		a.log.Info("Request body: " + body)
-
-		actor, err := a.activitypub.GetActor(actorName)
-		if err != nil {
-			render.Error(r.Context(), err, w, a.log)
-			return
-		}
-
-		render.Success(r.Context(), actor, http.StatusOK, w, a.log)
-
-	}
-}
-func readBodyToString(body io.ReadCloser) (string, error) {
-	defer body.Close()
-	buf := new(bytes.Buffer)
-	_, err := buf.ReadFrom(body)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
 }
