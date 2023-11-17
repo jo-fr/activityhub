@@ -88,15 +88,19 @@ func (a *API) registerRoutes() {
 	})
 
 	a.Get("/.well-known/webfinger", a.getWebfinger())
-	a.Get("/{actorName}", a.getActor())
 
-	a.Get("/{actorName}/following", a.FollowingEndpoint())
-	a.Get("/{actorName}/followers", a.FollowersEndpoint())
+	// /users endpoints
+	a.Route("/users", func(r chi.Router) {
 
-	// protected routes that need a signature header
-	a.Group(func(r chi.Router) {
-		r.Use(middleware.ValidateSignature(a.log))
-		a.Post("/{actorName}/inbox", a.ReceivceActivity())
+		a.Get("/{actorName}", a.getActor())
+		a.Get("/{actorName}/following", a.FollowingEndpoint())
+		a.Get("/{actorName}/followers", a.FollowersEndpoint())
+
+		// protected routes that need a signature header
+		a.Group(func(r chi.Router) {
+			r.Use(middleware.ValidateSignature(a.log))
+			a.Post("/{actorName}/inbox", a.ReceivceActivity())
+		})
 	})
 
 }
