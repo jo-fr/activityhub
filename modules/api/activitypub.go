@@ -88,17 +88,20 @@ type OrderedCollection struct {
 func (a *API) FollowingEndpoint() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		actorName := chi.URLParam(r, "actorName")
+		// check if actor exists on instance
+		_, err := a.activitypub.GetActor(r.Context(), actorName)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
 		following := OrderedCollection{
-			Context:    "https://www.w3.org/ns/activitystreams",
-			ID:         fmt.Sprintf("https://%s/users/joni/following", a.hostURL),
-			Type:       "OrderedCollection",
-			TotalItems: 4,
-			OrderedItems: []string{
-				"https://tldr.nettime.org/users/tante",
-				"https://social.hetzel.net/users/timo",
-				"https://social.rebellion.global/users/ScientistRebellion",
-				"https://social.network.europa.eu/users/EU_Commission",
-			},
+			Context:      "https://www.w3.org/ns/activitystreams",
+			ID:           fmt.Sprintf("https://%s/users/joni/following", a.hostURL),
+			Type:         "OrderedCollection",
+			TotalItems:   0,
+			OrderedItems: []string{},
 		}
 
 		render.Success(r.Context(), following, http.StatusOK, w, a.log)
@@ -108,20 +111,15 @@ func (a *API) FollowingEndpoint() http.HandlerFunc {
 func (a *API) FollowersEndpoint() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		followers := OrderedCollection{
-			Context:    "https://www.w3.org/ns/activitystreams",
-			ID:         fmt.Sprintf("https://%s/users/joni/followers", a.hostURL),
-			Type:       "OrderedCollection",
-			TotalItems: 4,
-			OrderedItems: []string{
-				"https://tldr.nettime.org/users/tante",
-				"https://social.hetzel.net/users/timo",
-				"https://social.rebellion.global/users/ScientistRebellion",
-				"https://social.network.europa.eu/users/EU_Commission",
-			},
+		actorName := chi.URLParam(r, "actorName")
+		followers, err := a.activitypub.GetFollowers(r.Context(), actorName)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
 		}
 
-		render.Success(r.Context(), followers, http.StatusOK, w, a.log)
+		collection := model.ExternalFollowerCollection(a.hostURL, actorName, followers)
+		render.Success(r.Context(), collection, http.StatusOK, w, a.log)
 	}
 }
 

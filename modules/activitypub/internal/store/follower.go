@@ -18,3 +18,14 @@ func (s *Store) CreateFollow(ctx context.Context, accountIDFollowed string, acco
 
 	return follower, nil
 }
+
+func (s *Store) GetFollowersOfAccount(ctx context.Context, accountID string) ([]models.Follower, error) {
+	var followers []models.Follower
+
+	err := s.db.WithContext(ctx).Where("account_id_followed = ?", accountID).Find(&followers).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return followers, nil
+}
