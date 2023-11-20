@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	model "github.com/jo-fr/activityhub/modules/api/internal/externalmodel"
-	"github.com/jo-fr/activityhub/modules/api/internal/httputil"
+	model "github.com/jo-fr/activityhub/modules/api/externalmodel"
+	"github.com/jo-fr/activityhub/modules/api/httputil"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 )
@@ -58,15 +58,15 @@ func (a *API) getActor() http.HandlerFunc {
 func (a *API) ReceivceActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		activity, err := httputil.UnmarshalBody[model.Activity](r)
+		activity, err := httputil.UnmarshalRequestBody[model.Activity](r)
 		if err != nil {
-			render.Error(r.Context(), err, w, a.log)
+			render.Success(r.Context(), nil, http.StatusOK, w, a.log)
 			return
 		}
 
 		a.log.Info(activity)
 
-		_, err = a.activitypub.ReceiveInboxActivity(r.Context(), activity.Actor, activity.Object, activity.Type)
+		err = a.activitypub.ReceiveInboxActivity(r.Context(), activity)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return

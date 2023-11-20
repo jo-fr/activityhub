@@ -5,5 +5,5 @@ type Activity struct {
 	ID      string `json:"id"`
 	Type    string `json:"type"`
 	Actor   string `json:"actor"`
-	Object  string `json:"object"`
+	Object  any    `json:"object"`
 }
