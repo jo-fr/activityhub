@@ -96,6 +96,7 @@ func runMigrations(db *gorm.DB, dbName string) error {
 	}
 
 	driver, err := postgresMigrate.WithInstance(dbConn, &postgresMigrate.Config{
+		DatabaseName:    dbName,
 		SchemaName:      schemaName,
 		MigrationsTable: migrationsTableName,
 	})
