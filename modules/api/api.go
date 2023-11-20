@@ -92,14 +92,14 @@ func (a *API) registerRoutes() {
 	// /users endpoints
 	a.Route("/users", func(r chi.Router) {
 
-		a.Get("/{actorName}", a.getActor())
-		a.Get("/{actorName}/following", a.FollowingEndpoint())
-		a.Get("/{actorName}/followers", a.FollowersEndpoint())
+		r.Get("/{actorName}", a.getActor())
+		r.Get("/{actorName}/following", a.FollowingEndpoint())
+		r.Get("/{actorName}/followers", a.FollowersEndpoint())
 
 		// protected routes that need a signature header
-		a.Group(func(r chi.Router) {
+		r.Group(func(r chi.Router) {
 			r.Use(middleware.ValidateSignature(a.log))
-			a.Post("/{actorName}/inbox", a.ReceivceActivity())
+			r.Post("/{actorName}/inbox", a.ReceivceActivity())
 		})
 	})
 
