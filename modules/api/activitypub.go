@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	model "github.com/jo-fr/activityhub/modules/api/externalmodel"
-	"github.com/jo-fr/activityhub/modules/api/httputil"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/errutil"
+	"github.com/jo-fr/activityhub/pkg/util/httputil"
 )
 
 // api errors

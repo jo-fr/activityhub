@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jo-fr/activityhub/modules/api/httputil"
+	"github.com/jo-fr/activityhub/pkg/util/httputil"
 	"github.com/pkg/errors"
 )
 
