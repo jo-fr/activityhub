@@ -150,10 +150,15 @@ func parsePublicKey(actor map[string]interface{}) (*rsa.PublicKey, error) {
 		return nil, errors.New("failed to parse PEM block containing the public key")
 	}
 
-	pubKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
+	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse DER encoded public key")
 	}
 
-	return pubKey, nil
+	pk, ok := pubKey.(*rsa.PublicKey)
+	if !ok {
+		return nil, errors.New("failed to parse DER encoded public key")
+	}
+
+	return pk, nil
 }
