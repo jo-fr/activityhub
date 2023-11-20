@@ -16,3 +16,12 @@ func (s *Store) GetAccoutByUsername(ctx context.Context, username string) (model
 
 	return account, nil
 }
+
+func (s *Store) CreateAccount(ctx context.Context, account models.Account) (models.Account, error) {
+	err := s.db.WithContext(ctx).Create(&account).Error
+	if err != nil {
+		return models.Account{}, err
+	}
+
+	return account, nil
+}
