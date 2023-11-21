@@ -10,13 +10,14 @@ import (
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
-	model "github.com/jo-fr/activityhub/modules/api/externalmodel"
+
+	"github.com/jo-fr/activityhub/pkg/externalmodel"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
-func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity model.Activity) error {
+func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmodel.Activity) error {
 
 	obj := activity.Object.(string)
 
@@ -41,11 +42,11 @@ func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity model.Activ
 	return nil
 }
 
-func returnAcceptActivity(ctx context.Context, account models.Account, activity model.Activity) error {
+func returnAcceptActivity(ctx context.Context, account models.Account, activity externalmodel.Activity) error {
 
 	obj := activity.Object.(string)
 
-	ma := model.Activity{
+	ma := externalmodel.Activity{
 		Context: "https://www.w3.org/ns/activitystreams",
 		ID:      activity.ID,
 		Type:    "Accept",

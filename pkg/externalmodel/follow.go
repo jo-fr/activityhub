@@ -1,4 +1,4 @@
-package model
+package externalmodel
 
 type Activity struct {
 	Context string `json:"@context"`

@@ -9,6 +9,7 @@ import (
 	model "github.com/jo-fr/activityhub/modules/api/externalmodel"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/errutil"
+	"github.com/jo-fr/activityhub/pkg/externalmodel"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
 )
 
@@ -35,7 +36,7 @@ func (a *API) getWebfinger() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), model.ExternalWebfinger(a.hostURL, resource, actor), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalWebfinger(a.hostURL, resource, actor), http.StatusOK, w, a.log)
 	}
 }
 
@@ -50,7 +51,7 @@ func (a *API) getActor() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), model.ExternalActor(a.hostURL, actor), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalActor(a.hostURL, actor), http.StatusOK, w, a.log)
 	}
 
 }
@@ -58,7 +59,7 @@ func (a *API) getActor() http.HandlerFunc {
 func (a *API) ReceiveActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		activity, err := httputil.UnmarshaBody[model.Activity](r.Body)
+		activity, err := httputil.UnmarshaBody[externalmodel.Activity](r.Body)
 		if err != nil {
 			render.Success(r.Context(), nil, http.StatusOK, w, a.log)
 			return
