@@ -17,6 +17,7 @@ import (
 	"github.com/jo-fr/activityhub/pkg/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 var Module = fx.Options(
@@ -38,8 +39,13 @@ type Database struct {
 func ProvideDatabase(lc fx.Lifecycle, config config.Config, logger *log.Logger) (*Database, error) {
 
 	dbConfig := config.Database
-	uri := getConnectionURI(dbConfig.Username, dbConfig.Password, dbConfig.Database, dbConfig.Host, dbConfig.Port)
-	_db, err := gorm.Open(postgres.Open(uri), &gorm.Config{})
+	dsn := getConnectionDSN(dbConfig.Username, dbConfig.Password, dbConfig.Database, dbConfig.Host, dbConfig.Port)
+	_db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   schemaName,
+			SingularTable: false,
+		}})
+
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to database")
 	}
@@ -134,8 +140,8 @@ func getMigrationsFilePath() (string, error) {
 
 }
 
-// getConnectionURI returns the connection uri for postgres
-func getConnectionURI(username string, password string, database string, host string, port string) string {
+// getConnectionDSN returns the connection dsn for postgres
+func getConnectionDSN(username string, password string, database string, host string, port string) string {
 	return fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		username, password, database, host, port)
 }
