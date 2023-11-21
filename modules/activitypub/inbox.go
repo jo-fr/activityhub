@@ -77,10 +77,10 @@ func returnAcceptActivity(ctx context.Context, account models.Account, activity 
 		return errors.Wrap(err, "failed to send request")
 	}
 
-	if httputil.StatusOK(resp.StatusCode) {
-		errBody, err := httputil.UnmarshalResponseBody[map[string]any](resp)
+	if !httputil.StatusOK(resp.StatusCode) {
+		errBody, err := httputil.UnmarshaBody[map[string]any](resp.Body)
 		if err != nil {
-			return errors.Wrap(err, "failed to unmarshal response body")
+			return errors.Wrapf(err, "failed to unmarshal error response body. Statuscode: %v", resp.StatusCode)
 		}
 		return fmt.Errorf("received status code %d. Response: %s", resp.StatusCode, errBody)
 	}
@@ -99,7 +99,7 @@ func GetInboxURL(actorURI string) (string, error) {
 		return "", errors.Wrap(err, "failed to get actor")
 	}
 
-	responseMap, err := httputil.UnmarshalResponseBody[map[string]any](resp)
+	responseMap, err := httputil.UnmarshaBody[map[string]any](resp.Body)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal response body")
 	}

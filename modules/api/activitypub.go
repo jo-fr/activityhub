@@ -55,10 +55,10 @@ func (a *API) getActor() http.HandlerFunc {
 
 }
 
-func (a *API) ReceivceActivity() http.HandlerFunc {
+func (a *API) ReceiveActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		activity, err := httputil.UnmarshalRequestBody[model.Activity](r)
+		activity, err := httputil.UnmarshaBody[model.Activity](r.Body)
 		if err != nil {
 			render.Success(r.Context(), nil, http.StatusOK, w, a.log)
 			return

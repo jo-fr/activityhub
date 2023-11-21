@@ -1,6 +1,7 @@
 package httprequest
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -20,7 +21,7 @@ const (
 )
 
 type Request struct {
-	*http.Request
+	request *http.Request
 }
 
 // New creates a new request with the given method, url and body.
@@ -37,14 +38,23 @@ func New(method string, url string, body io.Reader) (*Request, error) {
 
 // SetHeader sets the header with the given key and value.
 func (r *Request) SetHeader(key string, value string) {
-	r.Header.Set(key, value)
+	r.request.Header.Set(key, value)
 }
 
 // Do sends the request and returns the response.
 func (r *Request) Do() (*http.Response, error) {
 	c := http.Client{}
 
-	return c.Do(r.Request)
+	return c.Do(r.request)
+}
+
+// GetBody reads the request body and returns it as a bytes.Buffer. The request body is then reset to its original state.
+func (r *Request) GetBody() (*bytes.Buffer, error) {
+	body, err := r.request.GetBody()
+	if err != nil {
+		return nil, err
+	}
+	return httputil.GetBody(body)
 }
 
 // Sign adds required headers and signs the request with the given private key.
@@ -55,14 +65,14 @@ func (r *Request) Sign(privateKeyPEM []byte, actorURI string) error {
 		return errors.Wrap(err, "failed to parse private key")
 	}
 
-	body, err := httputil.GetBody(r.Request)
+	body, err := r.GetBody()
 	if err != nil {
 		return errors.Wrap(err, "failed to read request body")
 	}
 
 	tNow := time.Now().UTC()
 	digest := createBodyDigest(body.Bytes())
-	signatureString := createSignatureString(digest, r.Method, r.URL.Path, r.Host, tNow)
+	signatureString := createSignatureString(digest, r.request.Method, r.request.URL.Path, r.request.Host, tNow)
 	signatureBytes, err := signWithRSA(privateKey, signatureString)
 	if err != nil {
 		return errors.Wrap(err, "failed to sign signature string")

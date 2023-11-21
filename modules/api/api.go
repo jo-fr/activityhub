@@ -99,7 +99,7 @@ func (a *API) registerRoutes() {
 		// protected routes that need a signature header
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.ValidateSignature(a.log))
-			r.Post("/{actorName}/inbox", a.ReceivceActivity())
+			r.Post("/{actorName}/inbox", a.ReceiveActivity())
 		})
 	})
 
