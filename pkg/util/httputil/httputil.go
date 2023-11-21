@@ -47,3 +47,8 @@ func GetBody(r *http.Request) (*bytes.Buffer, error) {
 
 	return buffer, nil
 }
+
+// StatusOK returns true if the status code is between 200 and 299.
+func StatusOK(statusCode int) bool {
+	return statusCode >= 200 && statusCode < 300
+}

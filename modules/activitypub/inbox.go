@@ -77,7 +77,7 @@ func returnAcceptActivity(ctx context.Context, account models.Account, activity 
 		return errors.Wrap(err, "failed to send request")
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if httputil.StatusOK(resp.StatusCode) {
 		errBody, err := httputil.UnmarshalResponseBody[map[string]any](resp)
 		if err != nil {
 			return errors.Wrap(err, "failed to unmarshal response body")
