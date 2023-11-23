@@ -64,8 +64,6 @@ func (a *API) ReceiveActivity() http.HandlerFunc {
 			return
 		}
 
-		a.log.Info(activity)
-
 		err = a.activitypub.ReceiveInboxActivity(r.Context(), activity)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
