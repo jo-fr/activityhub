@@ -31,12 +31,13 @@ func (e AnnotatedError) HTTPStatusCode() int {
 	switch e.Type {
 	case TypeNotFound:
 		return http.StatusNotFound
-	case TypeInvalidRequestBody, TypeMissingHeader, TypeBadRequest:
+	case TypeInvalidRequestBody, TypeMissingHeader, TypeBadRequest, TypeAlreadyExists:
 		return http.StatusBadRequest
 
 	default:
 		return http.StatusInternalServerError
 	}
+
 }
 
 // NewError returns a new AnnotatedError with the given message

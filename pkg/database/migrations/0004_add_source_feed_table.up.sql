@@ -11,7 +11,7 @@ CREATE TYPE source_feed_type AS ENUM ('RSS');
         name VARCHAR(255) NOT NULL CHECK (name <> ''), 
         type source_feed_type NOT NULL,
         url VARCHAR(255) NOT NULL CHECK (url <> ''),
-        description VARCHAR(500) NOT NULL CHECK (description <> '') -- 500 char limit for description
+        description VARCHAR(500) -- 500 char limit for description
     );
 
     CREATE INDEX IF NOT EXISTS source_feed_deleted_at_idx ON activityhub.source_feed (deleted_at);
