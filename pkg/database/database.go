@@ -124,7 +124,6 @@ func runMigrations(db *gorm.DB, dbName string) error {
 	if err != nil && err != migrate.ErrNoChange {
 		return errors.Wrap(err, "failed to run db migration")
 	}
-	fmt.Println(err)
 
 	return nil
 }
