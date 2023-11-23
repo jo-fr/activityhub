@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	model "github.com/jo-fr/activityhub/modules/api/externalmodel"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
@@ -59,7 +58,7 @@ func (a *API) getActor() http.HandlerFunc {
 func (a *API) ReceiveActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		activity, err := httputil.UnmarshaBody[externalmodel.Activity](r.Body)
+		activity, err := httputil.UnmarshalBody[externalmodel.Activity](r.Body)
 		if err != nil {
 			render.Success(r.Context(), nil, http.StatusOK, w, a.log)
 			return
@@ -119,7 +118,7 @@ func (a *API) FollowersEndpoint() http.HandlerFunc {
 			return
 		}
 
-		collection := model.ExternalFollowerCollection(a.hostURL, actorName, followers)
+		collection := externalmodel.ExternalFollowerCollection(a.hostURL, actorName, followers)
 		render.Success(r.Context(), collection, http.StatusOK, w, a.log)
 	}
 }

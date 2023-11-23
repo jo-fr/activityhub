@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"net/url"
+	"strings"
 
 	"github.com/pkg/errors"
 )
 
-// // UnmarshaBody unmarshals the response body into the given typ without changing the request body.
-func UnmarshaBody[T any](body io.ReadCloser) (T, error) {
+// // UnmarshalBody unmarshals the response body into the given typ without changing the request body.
+func UnmarshalBody[T any](body io.ReadCloser) (T, error) {
 	var v T
 	buffer, err := GetBody(body)
 	if err != nil {
@@ -28,7 +30,6 @@ func GetBody(body io.ReadCloser) (*bytes.Buffer, error) {
 	}
 
 	buffer := bytes.NewBuffer(bodyBytes)
-	body = io.NopCloser(buffer)
 
 	return buffer, nil
 }
@@ -36,4 +37,22 @@ func GetBody(body io.ReadCloser) (*bytes.Buffer, error) {
 // StatusOK returns true if the status code is between 200 and 299.
 func StatusOK(statusCode int) bool {
 	return statusCode >= 200 && statusCode < 300
+}
+
+// SanitizeURL removes query parameters and trailing slashes from the given url. If the url has no scheme, https is used.
+func SanitizeURL(urlStr string) (string, error) {
+
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return "", err
+	}
+
+	parsedURL.RawQuery = ""
+	parsedURL.Path = strings.TrimSuffix(parsedURL.Path, "/")
+
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = "https"
+	}
+
+	return parsedURL.String(), nil
 }
