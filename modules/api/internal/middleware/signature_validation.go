@@ -17,6 +17,7 @@ import (
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/log"
 	"github.com/jo-fr/activityhub/pkg/util"
+	"github.com/jo-fr/activityhub/pkg/util/httputil"
 	"github.com/pkg/errors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -128,6 +129,10 @@ func fetchActor(keyID string) (map[string]interface{}, error) {
 		return nil, errors.Wrap(err, "failed to send request")
 	}
 	defer response.Body.Close()
+
+	if !httputil.StatusOK(response.StatusCode) {
+		return nil, errors.Errorf("request failed with status code %s", response.Status)
+	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {

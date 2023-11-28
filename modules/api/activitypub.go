@@ -60,7 +60,7 @@ func (a *API) ReceiveActivity() http.HandlerFunc {
 
 		activity, err := httputil.UnmarshalBody[externalmodel.Activity](r.Body)
 		if err != nil {
-			render.Success(r.Context(), nil, http.StatusOK, w, a.log)
+			render.Error(r.Context(), err, w, a.log)
 			return
 		}
 
