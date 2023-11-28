@@ -2,6 +2,7 @@ package feed
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/jo-fr/activityhub/modules/feed/internal/store"
@@ -44,7 +45,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 
 	sanatizedURL, err := httputil.SanitizeURL(feedurl)
 	if err != nil {
-		return model.SourceFeed{}, err
+		return model.SourceFeed{}, errors.Wrap(err, "failed to sanitize url")
 	}
 
 	_, err = h.store.GetSourceFeedWithFeedURL(ctx, sanatizedURL)
@@ -58,7 +59,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 
 	feed, err := h.parser.ParseURLWithContext(sanatizedURL, ctx)
 	if err != nil {
-		return model.SourceFeed{}, err
+		return model.SourceFeed{}, errors.Wrap(err, "failed to parse feed")
 	}
 
 	name := feed.Title
@@ -74,9 +75,43 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 
 	sourceFeed, err = h.store.CreateSourceFeed(ctx, sourceFeed)
 	if err != nil {
-		return model.SourceFeed{}, err
+		return model.SourceFeed{}, errors.Wrap(err, "failed to create source feed")
 	}
 
 	return sourceFeed, nil
+
+}
+
+func (h *Handler) FetchSourceFeed(ctx context.Context, sourceFeedID string) error {
+
+	sourceFeed, err := h.store.GetSourceFeedWithID(ctx, sourceFeedID)
+	if err != nil {
+		return errors.Wrap(err, "failed to get source feed")
+	}
+
+	feed, err := h.parser.ParseURLWithContext(sourceFeed.URL, ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse feed")
+	}
+
+	items := feed.Items
+	if len(items) < 1 {
+		return errors.New("no items found in feed")
+	}
+
+	newestItem := items[0]
+
+	title := util.RemoveHTMLTags(newestItem.Title)
+	description := util.RemoveHTMLTags(newestItem.Description)
+	link := newestItem.Link
+	publishedAt := newestItem.PublishedParsed
+
+	fmt.Println(sourceFeed.Name)
+	fmt.Println(title)
+	fmt.Println(description)
+	fmt.Println(publishedAt, link)
+	fmt.Println("----------------------------")
+
+	return nil
 
 }
