@@ -19,7 +19,10 @@ import (
 
 func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmodel.Activity) error {
 
-	obj := activity.Object.(string)
+	obj, ok := activity.Object.(string)
+	if !ok {
+		return errors.New("object is not a string")
+	}
 
 	accountName := getAccountFromURI(obj)
 	account, err := h.store.GetAccoutByUsername(ctx, accountName)
