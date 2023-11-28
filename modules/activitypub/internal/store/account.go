@@ -25,3 +25,14 @@ func (s *Store) CreateAccount(ctx context.Context, account models.Account) (mode
 
 	return account, nil
 }
+
+func (s *Store) GetAccountByID(ctx context.Context, id string) (models.Account, error) {
+	var account models.Account
+
+	err := s.db.WithContext(ctx).Where("id = ?", id).First(&account).Error
+	if err != nil {
+		return models.Account{}, err
+	}
+
+	return account, nil
+}
