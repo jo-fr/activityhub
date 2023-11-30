@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
@@ -26,18 +27,21 @@ func (h *Handler) SendPost(ctx context.Context, sendingActorID string, sendToURI
 		return errors.Wrap(err, "failed to get inbox url")
 	}
 
+	u := uuid.NewString()
+
 	actorURI := h.builtAccountURI(account.PreferredUsername)
 	activity := externalmodel.Activity{
 		Context:   "https://www.w3.org/ns/activitystreams",
-		ID:        fmt.Sprintf("%s#%s", actorURI, "3059e938-c0d0-4dec-8ecf-362022cbbff6"),
+		ID:        fmt.Sprintf("%s#%s", actorURI, u),
 		Type:      "Create",
 		Actor:     actorURI,
 		Published: time.Now().UTC().Format(time.RFC3339),
 		Object: externalmodel.Activity{
-			ID:        fmt.Sprintf("%s#%s", actorURI, "3059e938-c0d0-4dec-8ecf-362022cbbff6"),
+			ID:        fmt.Sprintf("%s#%s", actorURI, u),
 			Type:      "Note",
 			Content:   content,
 			Published: time.Now().UTC().Format(time.RFC3339),
+			Sensitive: false,
 		},
 		To: []string{"https://www.w3.org/ns/activitystreams#Public"},
 	}
