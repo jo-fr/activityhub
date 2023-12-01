@@ -2,6 +2,7 @@ package externalmodel
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
 )
@@ -15,8 +16,10 @@ type Actor struct {
 	PreferredUsername string    `json:"preferredUsername"`
 	Name              string    `json:"name"`
 	Summary           string    `json:"summary"`
+	Published         string    `json:"published"`
 	Inbox             string    `json:"inbox"`
 	PublicKey         PublicKey `json:"publicKey"`
+	Attachment        []string  `json:"attachment"`
 }
 type PublicKey struct {
 	ID           string `json:"id"`
@@ -34,14 +37,14 @@ func ExternalActor(hostURL string, acc models.Account) Actor {
 			"https://w3id.org/security/v1",
 		},
 		ID:                fmt.Sprintf("https://%s/users/%s", hostURL, username),
-		Type:              "Person",
+		Type:              "Service",
 		Following:         fmt.Sprintf("https://%s/users/%s/following", hostURL, username),
 		Followers:         fmt.Sprintf("https://%s/users/%s/followers", hostURL, username),
 		PreferredUsername: username,
 		Name:              acc.Name,
 		Summary:           acc.Summary,
-
-		Inbox: fmt.Sprintf("https://%s/users/%s/inbox", hostURL, username),
+		Published:         acc.CreatedAt.Format(time.RFC3339),
+		Inbox:             fmt.Sprintf("https://%s/users/%s/inbox", hostURL, username),
 		PublicKey: PublicKey{
 			ID:           fmt.Sprintf("https://%s/users/%s#main-key", hostURL, username),
 			Owner:        fmt.Sprintf("https://%s/users/%s", hostURL, username),
