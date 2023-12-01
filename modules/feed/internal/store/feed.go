@@ -15,7 +15,7 @@ func (s *Store) CreateSourceFeed(ctx context.Context, source model.SourceFeed) (
 
 func (s *Store) GetSourceFeedWithFeedURL(ctx context.Context, feedURL string) (model.SourceFeed, error) {
 	var source model.SourceFeed
-	if err := s.db.WithContext(ctx).First(&source, "url = ?", feedURL).Error; err != nil {
+	if err := s.db.WithContext(ctx).First(&source, "feed_url = ?", feedURL).Error; err != nil {
 		return model.SourceFeed{}, err
 	}
 	return source, nil

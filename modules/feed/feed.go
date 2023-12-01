@@ -3,6 +3,7 @@ package feed
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/jo-fr/activityhub/modules/activitypub"
@@ -41,26 +42,17 @@ func NewHandler(store *store.Store, log *log.Logger, activitypub *activitypub.Ha
 		activitypub: activitypub,
 	}
 
-	if err := h.FetchSourceFeed(context.Background(), "fef9533f-751e-49f1-bcf1-6b166167c67b"); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := h.FetchSourceFeed(context.Background(), "964ff6c2-0ae7-4707-b23b-b6a60fe17aab"); err != nil {
-		log.Fatal(err)
-	}
-	log.Info("fetched source feed")
-
 	return h
 }
 
 func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.SourceFeed, error) {
 
-	sanatizedURL, err := httputil.SanitizeURL(feedurl)
+	sanatizedFeedURL, err := httputil.SanitizeURL(feedurl)
 	if err != nil {
 		return model.SourceFeed{}, errors.Wrap(err, "failed to sanitize url")
 	}
 
-	_, err = h.store.GetSourceFeedWithFeedURL(ctx, sanatizedURL)
+	_, err = h.store.GetSourceFeedWithFeedURL(ctx, sanatizedFeedURL)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return model.SourceFeed{}, errors.Wrap(err, "failed to get source feed")
 	}
@@ -69,20 +61,37 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 		return model.SourceFeed{}, ErrSourceFeedAlreadyExists
 	}
 
-	feed, err := h.parser.ParseURLWithContext(sanatizedURL, ctx)
+	feed, err := h.parser.ParseURLWithContext(sanatizedFeedURL, ctx)
 	if err != nil {
 		return model.SourceFeed{}, errors.Wrap(err, "failed to parse feed")
 	}
 
 	name := feed.Title
 	description := strings.ReplaceAll(feed.Description, "\n", " ")
-	url := sanatizedURL
+	authorsSlice := util.Map(feed.Authors, func(item *gofeed.Person, index int) string {
+		if item == nil {
+			return ""
+		}
+
+		return item.Name
+	})
+	author := strings.Join(authorsSlice, ", ")
+
+	accountUsername := UsernameFromSourceFeedTitle(name)
+	account, err := h.activitypub.CreateAccount(ctx, accountUsername)
+	if err != nil {
+		return model.SourceFeed{}, errors.Wrap(err, "failed to create account")
+	}
 
 	sourceFeed := model.SourceFeed{
 		Name:        name,
 		Type:        model.SourceFeedTypeRSS,
-		URL:         url,
+		FeedURL:     sanatizedFeedURL,
+		HostURL:     feed.Link,
+		Author:      author,
 		Description: util.TrimStringLength(description, 500),
+		ImageURL:    util.FromPointer(feed.Image).URL,
+		AccountID:   account.ID,
 	}
 
 	sourceFeed, err = h.store.CreateSourceFeed(ctx, sourceFeed)
@@ -101,7 +110,7 @@ func (h *Handler) FetchSourceFeed(ctx context.Context, sourceFeedID string) erro
 		return errors.Wrap(err, "failed to get source feed")
 	}
 
-	feed, err := h.parser.ParseURLWithContext(sourceFeed.URL, ctx)
+	feed, err := h.parser.ParseURLWithContext(sourceFeed.FeedURL, ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse feed")
 	}
@@ -133,4 +142,15 @@ func builtPost(title string, description string, link string) string {
 
 	return fmt.Sprintf("<p>%s</br>%s</p>", content, link)
 
+}
+
+func UsernameFromSourceFeedTitle(title string) string {
+	title = RemovePunctuation(title)
+	title = strings.ReplaceAll(title, " ", "_")
+	return title
+}
+
+func RemovePunctuation(s string) string {
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+	return reg.ReplaceAllString(s, "")
 }
