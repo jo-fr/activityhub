@@ -10,19 +10,19 @@ CREATE TYPE source_feed_type AS ENUM ('RSS');
 
         name VARCHAR(255) NOT NULL CHECK (name <> ''), 
         type source_feed_type NOT NULL,
-        url VARCHAR(255) NOT NULL CHECK (url <> ''),
-        description VARCHAR(500) -- 500 char limit for description
+        feed_url VARCHAR(255) NOT NULL CHECK (feed_url <> ''),
+        host_url VARCHAR(255) NOT NULL CHECK (host_url <> ''),
+        author VARCHAR(255),
+        description VARCHAR(500), -- 500 char limit for description
+        image_url VARCHAR(255),
+        account_id UUID NOT NULL REFERENCES activityhub.account(id) 
     );
 
     CREATE INDEX IF NOT EXISTS source_feed_deleted_at_idx ON activityhub.source_feed (deleted_at);
     
     CREATE UNIQUE INDEX IF NOT EXISTS unique_source_feed_name_idx ON activityhub.source_feed(name) WHERE deleted_at IS NULL;
-    CREATE UNIQUE INDEX IF NOT EXISTS unique_source_feed_url_idx ON activityhub.source_feed(url) WHERE deleted_at IS NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS unique_source_feed_feed_url_idx ON activityhub.source_feed(feed_url) WHERE deleted_at IS NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS unique_source_feed_account_id_idx ON activityhub.source_feed(account_id) WHERE deleted_at IS NULL;
 
     
-    -- add source_feed_id to account
-    ALTER TABLE activityhub.account 
-        ADD COLUMN source_feed_id UUID REFERENCES activityhub.source_feed(id);
-    
-    CREATE UNIQUE INDEX unique_account_source_feed_id_idx ON activityhub.account(source_feed_id) WHERE deleted_at IS NULL;
 COMMIT;

@@ -12,8 +12,12 @@ type SourceFeed struct {
 	sharedmodel.BaseModel
 	Name        string
 	Type        SourceFeedType
-	URL         string
+	FeedURL     string
+	HostURL     string
+	Author      string
 	Description string
+	ImageURL    string
+	AccountID   string
 }
 
 func (*SourceFeed) TableName() string {
