@@ -78,7 +78,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 	})
 	author := strings.Join(authorsSlice, ", ")
 
-	accountUsername := UsernameFromSourceFeedTitle(name)
+	accountUsername := usernameFromSourceFeedTitle(name)
 	account, err := h.activitypub.CreateAccount(ctx, accountUsername)
 	if err != nil {
 		return model.SourceFeed{}, errors.Wrap(err, "failed to create account")
@@ -133,7 +133,7 @@ func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.S
 		AccountID: sourceFeed.AccountID,
 	}
 
-	status, err = h.store.CreateStatus(ctx, status)
+	_, err = h.store.CreateStatus(ctx, status)
 	if err != nil {
 		return errors.Wrap(err, "failed to create status")
 	}
@@ -159,13 +159,17 @@ func builtPost(title string, description string, link string) string {
 
 }
 
-func UsernameFromSourceFeedTitle(title string) string {
-	title = RemovePunctuation(title)
+// usernameFromSourceFeedTitle creates a username by removing punctuation and replacing spaces with underscores
+// e.g. "Hello, World!" -> "Hello_World"
+func usernameFromSourceFeedTitle(title string) string {
+	title = removePunctuation(title)
 	title = strings.ReplaceAll(title, " ", "_")
-	return title
+	return fmt.Sprintf("%s_activityhub", title)
 }
 
-func RemovePunctuation(s string) string {
+// removePunctuation removes all punctuation from a string
+// e.g. "Hello, World!" -> "Hello World"
+func removePunctuation(s string) string {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	return reg.ReplaceAllString(s, "")
 }
