@@ -21,7 +21,8 @@ import (
 
 var Module = fx.Options(
 	store.Module,
-	fx.Invoke(NewHandler),
+	fx.Provide(NewHandler),
+	fx.Invoke(Schedule),
 )
 
 // define errors
