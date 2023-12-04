@@ -104,12 +104,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 
 }
 
-func (h *Handler) FetchSourceFeed(ctx context.Context, sourceFeedID string) error {
-
-	sourceFeed, err := h.store.GetSourceFeedWithID(ctx, sourceFeedID)
-	if err != nil {
-		return errors.Wrap(err, "failed to get source feed")
-	}
+func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.SourceFeed) error {
 
 	feed, err := h.parser.ParseURLWithContext(sourceFeed.FeedURL, ctx)
 	if err != nil {
@@ -123,8 +118,27 @@ func (h *Handler) FetchSourceFeed(ctx context.Context, sourceFeedID string) erro
 
 	newestItem := items[0]
 
-	// todo do something with the code
-	_ = builtPost(newestItem.Title, newestItem.Description, newestItem.Link)
+	latestStatus, err := h.store.GetLatestStatusFromSourceFeed(ctx, sourceFeed.AccountID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.Wrap(err, "failed to get latest status")
+	}
+
+	if !newestItem.PublishedParsed.After(latestStatus.CreatedAt) {
+		return nil
+	}
+
+	post := builtPost(newestItem.Title, newestItem.Description, newestItem.Link)
+	status := model.Status{
+		Content:   post,
+		AccountID: sourceFeed.AccountID,
+	}
+
+	status, err = h.store.CreateStatus(ctx, status)
+	if err != nil {
+		return errors.Wrap(err, "failed to create status")
+	}
+
+	// put status into queue
 
 	return nil
 

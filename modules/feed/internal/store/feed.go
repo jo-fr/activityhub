@@ -28,3 +28,11 @@ func (s *Store) GetSourceFeedWithID(ctx context.Context, id string) (model.Sourc
 	}
 	return source, nil
 }
+
+func (s *Store) ListSourceFeeds(ctx context.Context) ([]model.SourceFeed, error) {
+	var sources []model.SourceFeed
+	if err := s.db.WithContext(ctx).Find(&sources).Error; err != nil {
+		return nil, err
+	}
+	return sources, nil
+}

@@ -10,16 +10,10 @@ import (
 	"go.uber.org/fx"
 )
 
-func Schedule(lc fx.Lifecycle, logger *log.Logger) error {
+func Schedule(lc fx.Lifecycle, logger *log.Logger, h *Handler) error {
 	s := gocron.NewScheduler(time.UTC)
 
-	job, err := s.Every(1).Second().Name("feed fetcher").Do(func() error {
-
-		logger.Info(time.Now().Second())
-
-		return errors.New("error")
-
-	})
+	job, err := s.Every(20).Second().Name("feed fetcher").Do(h.FetchFeed)
 	if err != nil {
 		return errors.Wrap(err, "failed to setup scheduler job")
 	}
@@ -53,4 +47,20 @@ func registerHooks(lc fx.Lifecycle, scheduler *gocron.Scheduler, logger *log.Log
 				return nil
 			},
 		})
+}
+
+func (h *Handler) FetchFeed() error {
+	ctx := context.Background()
+
+	sources, err := h.store.ListSourceFeeds(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get source feeds")
+	}
+
+	for _, source := range sources {
+		if err := h.FetchSourceFeedUpdates(ctx, source); err != nil {
+			return errors.Wrap(err, "failed to fetch source feed")
+		}
+	}
+	return nil
 }
