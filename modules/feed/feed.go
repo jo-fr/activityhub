@@ -67,7 +67,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 		return model.SourceFeed{}, errors.Wrap(err, "failed to parse feed")
 	}
 
-	name := feed.Title
+	title := feed.Title
 	description := strings.ReplaceAll(feed.Description, "\n", " ")
 	authorsSlice := util.Map(feed.Authors, func(item *gofeed.Person, index int) string {
 		if item == nil {
@@ -78,8 +78,11 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 	})
 	author := strings.Join(authorsSlice, ", ")
 
-	accountUsername := usernameFromSourceFeedTitle(name)
-	account, err := h.activitypub.CreateAccount(ctx, accountUsername)
+	accountUsername := usernameFromSourceFeedTitle(title)
+	name := fmt.Sprintf("%s's ActivityHub Bot", title)
+	summary := fmt.Sprintf("This is the ActivityHub Bot of %s. This is NOT an offical account and is not related with the owners of the posted content. Posting entries of RSS feed.", title)
+
+	account, err := h.activitypub.CreateAccount(ctx, accountUsername, name, summary)
 	if err != nil {
 		return model.SourceFeed{}, errors.Wrap(err, "failed to create account")
 	}
@@ -147,7 +150,7 @@ func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.S
 func builtPost(title string, description string, link string) string {
 
 	// sanatize
-	title = "<strong>" + util.RemoveHTMLTags(title) + "</strong> <br/>"
+	title = "<strong>" + util.RemoveHTMLTags(title) + "</strong><br/>"
 	description = strings.ReplaceAll(description, "\n", " ")
 	description = util.RemoveHTMLTags(description)
 	link = fmt.Sprintf("<a href=\"%s\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\">%s...</a>", link, link[:27])
@@ -164,6 +167,7 @@ func builtPost(title string, description string, link string) string {
 func usernameFromSourceFeedTitle(title string) string {
 	title = removePunctuation(title)
 	title = strings.ReplaceAll(title, " ", "_")
+	title = CamelToSnake(title)
 	return fmt.Sprintf("%s_activityhub", title)
 }
 
@@ -172,4 +176,12 @@ func usernameFromSourceFeedTitle(title string) string {
 func removePunctuation(s string) string {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	return reg.ReplaceAllString(s, "")
+}
+
+func CamelToSnake(camelCase string) string {
+	// Use regular expression to match uppercase letters and add underscore before them
+	snakeCase := regexp.MustCompile("([a-z0-9])([A-Z])").ReplaceAllString(camelCase, "${1}_${2}")
+	// Convert the string to lowercase
+	snakeCase = strings.ToLower(snakeCase)
+	return snakeCase
 }

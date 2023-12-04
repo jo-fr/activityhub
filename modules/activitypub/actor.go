@@ -2,8 +2,6 @@ package activitypub
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys"
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
@@ -29,7 +27,7 @@ func (h *Handler) GetActor(ctx context.Context, actor string) (models.Account, e
 	return account, nil
 }
 
-func (h *Handler) CreateAccount(ctx context.Context, username string) (models.Account, error) {
+func (h *Handler) CreateAccount(ctx context.Context, username string, name string, summary string) (models.Account, error) {
 
 	keys, err := keys.GenerateRSAKeyPair(2048)
 	if err != nil {
@@ -38,8 +36,8 @@ func (h *Handler) CreateAccount(ctx context.Context, username string) (models.Ac
 
 	account := models.Account{
 		PreferredUsername: username,
-		Name:              strings.Title(username),
-		Summary:           fmt.Sprintf("This is the mastodon Account of %s", username),
+		Name:              name,
+		Summary:           summary,
 		PrivateKey:        []byte(keys.PrivKeyPEM),
 		PublicKey:         []byte(keys.PubKeyPEM),
 	}
