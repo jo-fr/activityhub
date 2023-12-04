@@ -10,8 +10,8 @@ func (s *Store) GetLatestStatusFromSourceFeed(ctx context.Context, accountID str
 	var status model.Status
 	err := s.db.
 		WithContext(ctx).
-		Take(&status, "account_id = ?", accountID).
 		Order("created_at DESC").
+		Take(&status, "account_id = ?", accountID).
 		Error
 
 	if err != nil {
