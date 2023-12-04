@@ -6,7 +6,7 @@ BEGIN;
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         deleted_at TIMESTAMPTZ,
 
-        content VARCHAR(500) NOT NULL CHECK (content <> ''), -- 500 char limit for content same as mastodon has
+        content VARCHAR(800) NOT NULL CHECK (content <> ''), -- char limit is higher than mastodons 500 chars limit to be able to include links and html tags
         account_id UUID NOT NULL REFERENCES activityhub.account(id)
     );
 
