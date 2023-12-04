@@ -4,6 +4,7 @@ go 1.21.0
 
 require (
 	github.com/go-chi/chi/v5 v5.0.10
+	github.com/go-co-op/gocron v1.36.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.4.0
 	github.com/joho/godotenv v1.5.1
@@ -20,7 +21,6 @@ require (
 require (
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
-	github.com/go-co-op/gocron v1.36.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
