@@ -147,12 +147,12 @@ func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.S
 func builtPost(title string, description string, link string) string {
 
 	// sanatize
-	title = "<strong>" + util.RemoveHTMLTags(title) + "</strong>"
+	title = "<strong>" + util.RemoveHTMLTags(title) + "</strong> <br/>"
 	description = strings.ReplaceAll(description, "\n", " ")
 	description = util.RemoveHTMLTags(description)
 	link = fmt.Sprintf("<a href=\"%s\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\">%s...</a>", link, link[:27])
 
-	content := title + "\n" + description
+	content := title + description
 	content = util.TrimStringLength(content, 500-30)
 
 	return fmt.Sprintf("<p>%s</br>%s</p>", content, link)
