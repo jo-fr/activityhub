@@ -22,7 +22,7 @@ import (
 var Module = fx.Options(
 	store.Module,
 	fx.Provide(NewHandler),
-	fx.Invoke(Schedule),
+	fx.Invoke(ScheduleFeedFetcher),
 )
 
 // define errors
@@ -88,7 +88,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.S
 	}
 
 	sourceFeed := model.SourceFeed{
-		Name:        name,
+		Name:        title,
 		Type:        model.SourceFeedTypeRSS,
 		FeedURL:     sanatizedFeedURL,
 		HostURL:     feed.Link,
@@ -178,10 +178,13 @@ func removePunctuation(s string) string {
 	return reg.ReplaceAllString(s, "")
 }
 
+// CamelToSnake converts a string from camel case to snake case and replaces spaces with underscores
+// e.g. "HelloWorld" -> "hello_world"
 func CamelToSnake(camelCase string) string {
 	// Use regular expression to match uppercase letters and add underscore before them
 	snakeCase := regexp.MustCompile("([a-z0-9])([A-Z])").ReplaceAllString(camelCase, "${1}_${2}")
-	// Convert the string to lowercase
+
+	snakeCase = strings.ReplaceAll(snakeCase, " ", "_")
 	snakeCase = strings.ToLower(snakeCase)
 	return snakeCase
 }
