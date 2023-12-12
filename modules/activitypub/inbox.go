@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
+	"github.com/jo-fr/activityhub/modules/activitypub/internal/store"
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
 
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
@@ -18,31 +19,32 @@ import (
 )
 
 func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmodel.Activity) error {
-
-	obj, ok := activity.Object.(string)
-	if !ok {
-		return errors.New("object is not a string")
-	}
-
-	accountName := getAccountFromURI(obj)
-	account, err := h.store.GetAccoutByUsername(ctx, accountName)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrActorNotFound
+	return h.store.Execute(ctx, func(e *store.Executer) error {
+		obj, ok := activity.Object.(string)
+		if !ok {
+			return errors.New("object is not a string")
 		}
-		return errors.Wrap(err, "failed to get actor from db")
-	}
 
-	_, err = h.store.CreateFollow(ctx, account.ID, activity.Actor)
-	if err != nil {
-		return errors.Wrap(err, "failed to create follow")
-	}
+		accountName := getAccountFromURI(obj)
+		account, err := e.GetAccoutByUsername(accountName)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrActorNotFound
+			}
+			return errors.Wrap(err, "failed to get actor from db")
+		}
 
-	if err := returnAcceptActivity(ctx, account, activity); err != nil {
-		return errors.Wrap(err, "failed to return accept activity")
-	}
+		_, err = e.CreateFollow(account.ID, activity.Actor)
+		if err != nil {
+			return errors.Wrap(err, "failed to create follow")
+		}
 
-	return nil
+		if err := returnAcceptActivity(ctx, account, activity); err != nil {
+			return errors.Wrap(err, "failed to return accept activity")
+		}
+
+		return nil
+	})
 }
 
 func returnAcceptActivity(ctx context.Context, account models.Account, activity externalmodel.Activity) error {

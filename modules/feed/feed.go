@@ -46,104 +46,109 @@ func NewHandler(store *store.Store, log *log.Logger, activitypub *activitypub.Ha
 	return h
 }
 
-func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (model.SourceFeed, error) {
+func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceFeed model.SourceFeed, err error) {
 
-	sanatizedFeedURL, err := httputil.SanitizeURL(feedurl)
-	if err != nil {
-		return model.SourceFeed{}, errors.Wrap(err, "failed to sanitize url")
-	}
-
-	_, err = h.store.GetSourceFeedWithFeedURL(ctx, sanatizedFeedURL)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return model.SourceFeed{}, errors.Wrap(err, "failed to get source feed")
-	}
-
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return model.SourceFeed{}, ErrSourceFeedAlreadyExists
-	}
-
-	feed, err := h.parser.ParseURLWithContext(sanatizedFeedURL, ctx)
-	if err != nil {
-		return model.SourceFeed{}, errors.Wrap(err, "failed to parse feed")
-	}
-
-	title := feed.Title
-	description := strings.ReplaceAll(feed.Description, "\n", " ")
-	authorsSlice := util.Map(feed.Authors, func(item *gofeed.Person, index int) string {
-		if item == nil {
-			return ""
+	err = h.store.Execute(ctx, func(e *store.Executer) error {
+		sanatizedFeedURL, err := httputil.SanitizeURL(feedurl)
+		if err != nil {
+			return errors.Wrap(err, "failed to sanitize url")
 		}
 
-		return item.Name
+		_, err = e.GetSourceFeedWithFeedURL(sanatizedFeedURL)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.Wrap(err, "failed to get source feed")
+		}
+
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrSourceFeedAlreadyExists
+		}
+
+		feed, err := h.parser.ParseURLWithContext(sanatizedFeedURL, ctx)
+		if err != nil {
+			return errors.Wrap(err, "failed to parse feed")
+		}
+
+		title := feed.Title
+		description := strings.ReplaceAll(feed.Description, "\n", " ")
+		authorsSlice := util.Map(feed.Authors, func(item *gofeed.Person, index int) string {
+			if item == nil {
+				return ""
+			}
+
+			return item.Name
+		})
+		author := strings.Join(authorsSlice, ", ")
+
+		accountUsername := usernameFromSourceFeedTitle(title)
+		name := fmt.Sprintf("%s ActivityHub Bot", title)
+		summary := fmt.Sprintf("This is the ActivityHub Bot of %s. This is NOT an offical account and is not related with the owners of the posted content. Posting entries of RSS feed.", title)
+
+		account, err := h.activitypub.CreateAccount(ctx, accountUsername, name, summary)
+		if err != nil {
+			return errors.Wrap(err, "failed to create account")
+		}
+
+		sourceFeed = model.SourceFeed{
+			Name:        title,
+			Type:        model.SourceFeedTypeRSS,
+			FeedURL:     sanatizedFeedURL,
+			HostURL:     feed.Link,
+			Author:      author,
+			Description: util.TrimStringLength(description, 500),
+			ImageURL:    util.FromPointer(feed.Image).URL,
+			AccountID:   account.ID,
+		}
+
+		sourceFeed, err = e.CreateSourceFeed(sourceFeed)
+		if err != nil {
+			return errors.Wrap(err, "failed to create source feed")
+		}
+
+		return nil
 	})
-	author := strings.Join(authorsSlice, ", ")
 
-	accountUsername := usernameFromSourceFeedTitle(title)
-	name := fmt.Sprintf("%s's ActivityHub Bot", title)
-	summary := fmt.Sprintf("This is the ActivityHub Bot of %s. This is NOT an offical account and is not related with the owners of the posted content. Posting entries of RSS feed.", title)
-
-	account, err := h.activitypub.CreateAccount(ctx, accountUsername, name, summary)
-	if err != nil {
-		return model.SourceFeed{}, errors.Wrap(err, "failed to create account")
-	}
-
-	sourceFeed := model.SourceFeed{
-		Name:        title,
-		Type:        model.SourceFeedTypeRSS,
-		FeedURL:     sanatizedFeedURL,
-		HostURL:     feed.Link,
-		Author:      author,
-		Description: util.TrimStringLength(description, 500),
-		ImageURL:    util.FromPointer(feed.Image).URL,
-		AccountID:   account.ID,
-	}
-
-	sourceFeed, err = h.store.CreateSourceFeed(ctx, sourceFeed)
-	if err != nil {
-		return model.SourceFeed{}, errors.Wrap(err, "failed to create source feed")
-	}
-
-	return sourceFeed, nil
+	return sourceFeed, err
 
 }
 
 func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.SourceFeed) error {
+	return h.store.Execute(ctx, func(e *store.Executer) error {
+		feed, err := h.parser.ParseURLWithContext(sourceFeed.FeedURL, ctx)
+		if err != nil {
+			return errors.Wrap(err, "failed to parse feed")
+		}
 
-	feed, err := h.parser.ParseURLWithContext(sourceFeed.FeedURL, ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to parse feed")
-	}
+		items := feed.Items
+		if len(items) < 1 {
+			return errors.New("no items found in feed")
+		}
 
-	items := feed.Items
-	if len(items) < 1 {
-		return errors.New("no items found in feed")
-	}
+		newestItem := items[0]
 
-	newestItem := items[0]
+		latestStatus, err := e.GetLatestStatusFromSourceFeed(sourceFeed.AccountID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.Wrap(err, "failed to get latest status")
+		}
 
-	latestStatus, err := h.store.GetLatestStatusFromSourceFeed(ctx, sourceFeed.AccountID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.Wrap(err, "failed to get latest status")
-	}
+		if !newestItem.PublishedParsed.After(latestStatus.CreatedAt) {
+			return nil
+		}
 
-	if !newestItem.PublishedParsed.After(latestStatus.CreatedAt) {
+		post := builtPost(newestItem.Title, newestItem.Description, newestItem.Link)
+		status := model.Status{
+			Content:   post,
+			AccountID: sourceFeed.AccountID,
+		}
+
+		_, err = e.CreateStatus(status)
+		if err != nil {
+			return errors.Wrap(err, "failed to create status")
+		}
+
+		// put status into queue
+
 		return nil
-	}
-
-	post := builtPost(newestItem.Title, newestItem.Description, newestItem.Link)
-	status := model.Status{
-		Content:   post,
-		AccountID: sourceFeed.AccountID,
-	}
-
-	_, err = h.store.CreateStatus(ctx, status)
-	if err != nil {
-		return errors.Wrap(err, "failed to create status")
-	}
-
-	// put status into queue
-
-	return nil
+	})
 
 }
 

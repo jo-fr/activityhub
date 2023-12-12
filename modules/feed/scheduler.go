@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
+	"github.com/jo-fr/activityhub/modules/feed/internal/store"
 	"github.com/jo-fr/activityhub/modules/feed/model"
 	"github.com/jo-fr/activityhub/pkg/log"
 	"github.com/pkg/errors"
@@ -14,32 +15,35 @@ import (
 
 func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error {
 	ctx := context.Background()
-	s := gocron.NewScheduler(time.UTC)
-	s.RegisterEventListeners(
-		gocron.WhenJobReturnsError(func(jobName string, err error) {
-			logger.
-				WithField("jobName", jobName).
-				Errorf("scheduler job failed. Err %s", err.Error())
-		}),
-	)
+	return h.store.Execute(ctx, func(e *store.Executer) error {
+		s := gocron.NewScheduler(time.UTC)
+		s.RegisterEventListeners(
+			gocron.WhenJobReturnsError(func(jobName string, err error) {
+				logger.
+					WithField("jobName", jobName).
+					Errorf("scheduler job failed. Err %s", err.Error())
+			}),
+		)
 
-	sources, err := h.store.ListSourceFeeds(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to get source feeds")
-	}
-
-	for _, source := range sources {
-		jobName := getSchedulerJobName(source.Name)
-		_, err := s.Every(20).Second().Name(jobName).Do(h.FetchFeed(ctx, source))
+		sources, err := e.ListSourceFeeds()
 		if err != nil {
-			return errors.Wrapf(err, "failed to setup scheduler job. source name: %s", source.Name)
+			return errors.Wrap(err, "failed to get source feeds")
 		}
-		logger.Infof("%s successfully scheduled", jobName)
-	}
 
-	registerHooks(lc, s, logger)
+		for _, source := range sources {
+			jobName := getSchedulerJobName(source.Name)
+			_, err := s.Every(20).Second().Name(jobName).Do(h.FetchFeed(ctx, source))
+			if err != nil {
+				return errors.Wrapf(err, "failed to setup scheduler job. source name: %s", source.Name)
+			}
+			logger.Infof("%s successfully scheduled", jobName)
+		}
 
-	return nil
+		registerHooks(lc, s, logger)
+
+		return nil
+	})
+
 }
 
 // registerHooks for uber fx
