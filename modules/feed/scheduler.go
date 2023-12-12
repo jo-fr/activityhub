@@ -13,17 +13,18 @@ import (
 func Schedule(lc fx.Lifecycle, logger *log.Logger, h *Handler) error {
 	s := gocron.NewScheduler(time.UTC)
 
-	job, err := s.Every(20).Second().Name("feed fetcher").Do(h.FetchFeed)
-	if err != nil {
-		return errors.Wrap(err, "failed to setup scheduler job")
-	}
-	job.RegisterEventListeners(
+	s.RegisterEventListeners(
 		gocron.WhenJobReturnsError(func(jobName string, err error) {
 			logger.
 				WithField("jobName", jobName).
 				Errorf("scheduler job failed. Err %s", err.Error())
 		}),
 	)
+
+	_, err := s.Every(20).Second().Name("feed fetcher").Do(h.FetchFeed)
+	if err != nil {
+		return errors.Wrap(err, "failed to setup scheduler job")
+	}
 
 	registerHooks(lc, s, logger)
 
