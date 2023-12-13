@@ -5,7 +5,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"log"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
 	"github.com/pkg/errors"
@@ -38,7 +37,6 @@ func generatePrivateKey(bitSize int) (*rsa.PrivateKey, error) {
 		return nil, errors.Wrap(err, "failed to validate private key")
 	}
 
-	log.Println("Private Key generated")
 	return privateKey, nil
 }
 
