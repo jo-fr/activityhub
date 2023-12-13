@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/store"
+	"github.com/jo-fr/activityhub/modules/activitypub/internal/repository"
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
 
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
@@ -19,7 +19,7 @@ import (
 )
 
 func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmodel.Activity) error {
-	return h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
+	return h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
 		obj, ok := activity.Object.(string)
 		if !ok {
 			return errors.New("object is not a string")

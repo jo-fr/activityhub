@@ -10,14 +10,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/store"
+	"github.com/jo-fr/activityhub/modules/activitypub/internal/repository"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
 	"github.com/pkg/errors"
 )
 
 func (h *Handler) SendPost(ctx context.Context, sendingActorID string, sendToURI string, content string) error {
-	return h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
+	return h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
 		account, err := e.GetAccountByID(sendingActorID)
 		if err != nil {
 			return errors.Wrap(err, "failed to get account by id")

@@ -1,4 +1,4 @@
-package store
+package repository
 
 import (
 	"github.com/jo-fr/activityhub/modules/feed/model"

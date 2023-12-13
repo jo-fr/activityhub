@@ -3,7 +3,7 @@ package activitypub
 import (
 	"context"
 
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/store"
+	"github.com/jo-fr/activityhub/modules/activitypub/internal/repository"
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -11,7 +11,7 @@ import (
 
 func (h *Handler) GetFollowers(ctx context.Context, actorname string) (follower []models.Follower, err error) {
 
-	err = h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
+	err = h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
 		account, err := e.GetAccoutByUsername(actorname)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {

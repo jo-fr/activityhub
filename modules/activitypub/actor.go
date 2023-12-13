@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys"
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/store"
+	"github.com/jo-fr/activityhub/modules/activitypub/internal/repository"
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/pkg/errors"
@@ -17,7 +17,7 @@ var (
 )
 
 func (h *Handler) GetActor(ctx context.Context, actor string) (acc models.Account, err error) {
-	err = h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
+	err = h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
 		acc, err = e.GetAccoutByUsername(actor)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -33,7 +33,7 @@ func (h *Handler) GetActor(ctx context.Context, actor string) (acc models.Accoun
 }
 
 func (h *Handler) CreateAccount(ctx context.Context, username string, name string, summary string) (acc models.Account, err error) {
-	err = h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
+	err = h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
 		keys, err := keys.GenerateRSAKeyPair(2048)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate RSA key pair")

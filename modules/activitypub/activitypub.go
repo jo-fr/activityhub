@@ -1,23 +1,23 @@
 package activitypub
 
 import (
-	"github.com/jo-fr/activityhub/modules/activitypub/internal/store"
+	"github.com/jo-fr/activityhub/modules/activitypub/internal/repository"
 	"github.com/jo-fr/activityhub/pkg/config"
-	"github.com/jo-fr/activityhub/pkg/database"
+	"github.com/jo-fr/activityhub/pkg/store"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
-	store.Module,
+	repository.Module,
 	fx.Provide(ProvideHandler),
 )
 
 type Handler struct {
 	hostURL string
-	store   *database.Store[*store.ActivityHubRepository]
+	store   *store.Store[*repository.ActivityHubRepository]
 }
 
-func ProvideHandler(config config.Config, store *database.Store[*store.ActivityHubRepository]) *Handler {
+func ProvideHandler(config config.Config, store *store.Store[*repository.ActivityHubRepository]) *Handler {
 
 	return &Handler{
 		hostURL: config.HostURL,

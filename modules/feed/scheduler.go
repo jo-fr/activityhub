@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
-	"github.com/jo-fr/activityhub/modules/feed/internal/store"
+	"github.com/jo-fr/activityhub/modules/feed/internal/repository"
 	"github.com/jo-fr/activityhub/modules/feed/model"
 	"github.com/jo-fr/activityhub/pkg/log"
 	"github.com/pkg/errors"
@@ -15,7 +15,7 @@ import (
 
 func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error {
 	ctx := context.Background()
-	return h.store.Execute(ctx, func(e *store.FeedRepository) error {
+	return h.store.Execute(ctx, func(e *repository.FeedRepository) error {
 		s := gocron.NewScheduler(time.UTC)
 		s.RegisterEventListeners(
 			gocron.WhenJobReturnsError(func(jobName string, err error) {
@@ -51,7 +51,6 @@ func registerHooks(lc fx.Lifecycle, scheduler *gocron.Scheduler, logger *log.Log
 		fx.Hook{
 			OnStop: func(context.Context) error {
 				logger.Info("stopping scheduler jobs")
-
 				scheduler.Stop()
 				return nil
 			},

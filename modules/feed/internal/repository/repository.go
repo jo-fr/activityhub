@@ -1,21 +1,21 @@
-package store
+package repository
 
 import (
-	"github.com/jo-fr/activityhub/pkg/database"
+	"github.com/jo-fr/activityhub/pkg/store"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
 	fx.Provide(NewFeedRepository),
-	fx.Provide(database.NewStore[*FeedRepository]),
+	fx.Provide(store.NewStore[*FeedRepository]),
 )
 
 type FeedRepository struct {
-	*database.Repository
+	*store.Repository
 }
 
 func NewFeedRepository() *FeedRepository {
 	return &FeedRepository{
-		Repository: database.NewRepository(),
+		Repository: store.NewRepository(),
 	}
 }
