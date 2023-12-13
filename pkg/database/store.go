@@ -29,7 +29,7 @@ type IRepository interface {
 // Execute executes a repository functions within one database transaction. It either uses the transaction
 // provided in the context or creates a new one. It rolls back the transaction if an error occurs.
 func (s *Store[T]) Execute(ctx context.Context, f func(e T) error) error {
-	tx, ok := ctx.Value("tx").(*gorm.DB)
+	tx, ok := ctx.Value(ctxTxKey{}).(*gorm.DB)
 	if !ok {
 		tx = s.db.DB.WithContext(ctx).Begin()
 		defer tx.Rollback()
@@ -73,4 +73,12 @@ func (e *Repository) SetTX(tx *gorm.DB) {
 		e = &Repository{}
 	}
 	e.tx = tx
+}
+
+// ctxTxKey is the key used to store the database transaction in the context.
+type ctxTxKey struct{}
+
+// GetCtxWithTx returns a new context with the current database transaction associated with the repository.
+func (e *Repository) GetCtxWithTx(ctx context.Context) context.Context {
+	return context.WithValue(ctx, ctxTxKey{}, e.GetTX())
 }
