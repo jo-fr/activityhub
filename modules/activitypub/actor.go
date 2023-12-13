@@ -17,7 +17,7 @@ var (
 )
 
 func (h *Handler) GetActor(ctx context.Context, actor string) (acc models.Account, err error) {
-	err = h.store.Execute(ctx, func(e *store.Executer) error {
+	err = h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
 		acc, err = e.GetAccoutByUsername(actor)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -33,7 +33,7 @@ func (h *Handler) GetActor(ctx context.Context, actor string) (acc models.Accoun
 }
 
 func (h *Handler) CreateAccount(ctx context.Context, username string, name string, summary string) (acc models.Account, err error) {
-	err = h.store.Execute(ctx, func(e *store.Executer) error {
+	err = h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
 		keys, err := keys.GenerateRSAKeyPair(2048)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate RSA key pair")

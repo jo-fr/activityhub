@@ -15,7 +15,7 @@ import (
 
 func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error {
 	ctx := context.Background()
-	return h.store.Execute(ctx, func(e *store.Executer) error {
+	return h.store.Execute(ctx, func(e *store.FeedRepository) error {
 		s := gocron.NewScheduler(time.UTC)
 		s.RegisterEventListeners(
 			gocron.WhenJobReturnsError(func(jobName string, err error) {

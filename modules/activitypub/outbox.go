@@ -17,7 +17,7 @@ import (
 )
 
 func (h *Handler) SendPost(ctx context.Context, sendingActorID string, sendToURI string, content string) error {
-	return h.store.Execute(ctx, func(e *store.Executer) error {
+	return h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
 		account, err := e.GetAccountByID(sendingActorID)
 		if err != nil {
 			return errors.Wrap(err, "failed to get account by id")

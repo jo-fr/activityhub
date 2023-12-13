@@ -9,6 +9,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/activitypub"
 	"github.com/jo-fr/activityhub/modules/feed/internal/store"
 	"github.com/jo-fr/activityhub/modules/feed/model"
+	"github.com/jo-fr/activityhub/pkg/database"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/log"
 	"github.com/jo-fr/activityhub/pkg/util"
@@ -32,11 +33,11 @@ var (
 
 type Handler struct {
 	parser      *gofeed.Parser
-	store       *store.Store
+	store       *database.Store[*store.FeedRepository]
 	activitypub *activitypub.Handler
 }
 
-func NewHandler(store *store.Store, log *log.Logger, activitypub *activitypub.Handler) *Handler {
+func NewHandler(store *database.Store[*store.FeedRepository], log *log.Logger, activitypub *activitypub.Handler) *Handler {
 	h := &Handler{
 		parser:      gofeed.NewParser(),
 		store:       store,
@@ -48,7 +49,7 @@ func NewHandler(store *store.Store, log *log.Logger, activitypub *activitypub.Ha
 
 func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceFeed model.SourceFeed, err error) {
 
-	err = h.store.Execute(ctx, func(e *store.Executer) error {
+	err = h.store.Execute(ctx, func(e *store.FeedRepository) error {
 		sanatizedFeedURL, err := httputil.SanitizeURL(feedurl)
 		if err != nil {
 			return errors.Wrap(err, "failed to sanitize url")
@@ -83,6 +84,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceF
 		name := fmt.Sprintf("%s ActivityHub Bot", title)
 		summary := fmt.Sprintf("This is the ActivityHub Bot of %s. This is NOT an offical account and is not related with the owners of the posted content. Posting entries of RSS feed.", title)
 
+		ctx = context.WithValue(ctx, "tx", e.GetTX())
 		account, err := h.activitypub.CreateAccount(ctx, accountUsername, name, summary)
 		if err != nil {
 			return errors.Wrap(err, "failed to create account")
@@ -112,7 +114,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceF
 }
 
 func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.SourceFeed) error {
-	return h.store.Execute(ctx, func(e *store.Executer) error {
+	return h.store.Execute(ctx, func(e *store.FeedRepository) error {
 		feed, err := h.parser.ParseURLWithContext(sourceFeed.FeedURL, ctx)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse feed")

@@ -4,9 +4,9 @@ import (
 	"github.com/jo-fr/activityhub/modules/feed/model"
 )
 
-func (e *Executer) GetLatestStatusFromSourceFeed(accountID string) (model.Status, error) {
+func (e *FeedRepository) GetLatestStatusFromSourceFeed(accountID string) (model.Status, error) {
 	var status model.Status
-	err := e.tx.
+	err := e.GetTX().
 		Order("created_at DESC").
 		Take(&status, "account_id = ?", accountID).
 		Error
@@ -17,8 +17,8 @@ func (e *Executer) GetLatestStatusFromSourceFeed(accountID string) (model.Status
 	return status, nil
 }
 
-func (e *Executer) CreateStatus(status model.Status) (model.Status, error) {
-	if err := e.tx.Create(&status).Error; err != nil {
+func (e *FeedRepository) CreateStatus(status model.Status) (model.Status, error) {
+	if err := e.GetTX().Create(&status).Error; err != nil {
 		return model.Status{}, err
 	}
 	return status, nil

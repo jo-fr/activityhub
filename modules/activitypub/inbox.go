@@ -19,7 +19,7 @@ import (
 )
 
 func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmodel.Activity) error {
-	return h.store.Execute(ctx, func(e *store.Executer) error {
+	return h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
 		obj, ok := activity.Object.(string)
 		if !ok {
 			return errors.New("object is not a string")

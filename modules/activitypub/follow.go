@@ -11,7 +11,7 @@ import (
 
 func (h *Handler) GetFollowers(ctx context.Context, actorname string) (follower []models.Follower, err error) {
 
-	err = h.store.Execute(ctx, func(e *store.Executer) error {
+	err = h.store.Execute(ctx, func(e *store.ActivityHubRepository) error {
 		account, err := e.GetAccoutByUsername(actorname)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
