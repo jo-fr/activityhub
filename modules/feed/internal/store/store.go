@@ -6,9 +6,16 @@ import (
 )
 
 var Module = fx.Options(
+	fx.Provide(NewFeedRepository),
 	fx.Provide(database.NewStore[*FeedRepository]),
 )
 
 type FeedRepository struct {
 	*database.Repository
+}
+
+func NewFeedRepository() *FeedRepository {
+	return &FeedRepository{
+		Repository: database.NewRepository(),
+	}
 }

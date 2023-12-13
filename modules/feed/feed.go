@@ -37,10 +37,10 @@ type Handler struct {
 	activitypub *activitypub.Handler
 }
 
-func NewHandler(store *database.Store[*store.FeedRepository], log *log.Logger, activitypub *activitypub.Handler) *Handler {
+func NewHandler(s *database.Store[*store.FeedRepository], log *log.Logger, activitypub *activitypub.Handler) *Handler {
 	h := &Handler{
 		parser:      gofeed.NewParser(),
-		store:       store,
+		store:       s,
 		activitypub: activitypub,
 	}
 

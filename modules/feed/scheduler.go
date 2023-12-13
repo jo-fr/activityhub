@@ -40,7 +40,6 @@ func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error 
 		}
 
 		registerHooks(lc, s, logger)
-
 		return nil
 	})
 
