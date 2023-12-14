@@ -10,6 +10,7 @@ import (
 
 	"github.com/jo-fr/activityhub/modules/activitypub"
 	"github.com/jo-fr/activityhub/modules/api/internal/middleware"
+	"github.com/jo-fr/activityhub/modules/feed"
 	"github.com/jo-fr/activityhub/pkg/config"
 	"github.com/jo-fr/activityhub/pkg/log"
 
@@ -26,15 +27,17 @@ type API struct {
 	hostURL string
 
 	activitypub *activitypub.Handler
+	feed        *feed.Handler
 }
 
-func ProvideAPI(lc fx.Lifecycle, config config.Config, logger *log.Logger, activitypub *activitypub.Handler) *API {
+func ProvideAPI(lc fx.Lifecycle, config config.Config, logger *log.Logger, activitypub *activitypub.Handler, feed *feed.Handler) *API {
 
 	api := &API{
 		Mux:         chi.NewRouter(),
 		log:         logger,
 		hostURL:     config.HostURL,
 		activitypub: activitypub,
+		feed:        feed,
 	}
 
 	api.registerMiddlewares(logger)
@@ -101,6 +104,10 @@ func (a *API) registerRoutes() {
 			r.Use(middleware.ValidateSignature(a.log))
 			r.Post("/{actorName}/inbox", a.ReceiveActivity())
 		})
+	})
+
+	a.Route("/api", func(r chi.Router) {
+		r.Post("/feed", a.AddNewFeedSource())
 	})
 
 }
