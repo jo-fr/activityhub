@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/go-co-op/gocron"
 	"github.com/jo-fr/activityhub/modules/activitypub"
 
 	"github.com/jo-fr/activityhub/modules/feed/internal/repository"
@@ -36,12 +37,15 @@ type Handler struct {
 	parser      *gofeed.Parser
 	store       *store.Store[*repository.FeedRepository]
 	activitypub *activitypub.Handler
+	log         *log.Logger
+	scheduler   *gocron.Scheduler
 }
 
 func NewHandler(s *store.Store[*repository.FeedRepository], log *log.Logger, activitypub *activitypub.Handler) *Handler {
 	h := &Handler{
 		parser:      gofeed.NewParser(),
 		store:       s,
+		log:         log,
 		activitypub: activitypub,
 	}
 
@@ -49,7 +53,6 @@ func NewHandler(s *store.Store[*repository.FeedRepository], log *log.Logger, act
 }
 
 func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceFeed model.SourceFeed, err error) {
-
 	err = h.store.Execute(ctx, func(e *repository.FeedRepository) error {
 		sanatizedFeedURL, err := httputil.SanitizeURL(feedurl)
 		if err != nil {
@@ -107,6 +110,8 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceF
 			return errors.Wrap(err, "failed to create source feed")
 		}
 
+		scheduleNewJob(ctx, h.scheduler, h.log, sourceFeed.Name, h.FetchFeed(ctx, sourceFeed))
+
 		return nil
 	})
 
@@ -133,7 +138,7 @@ func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.S
 			return errors.Wrap(err, "failed to get latest status")
 		}
 
-		if !newestItem.PublishedParsed.After(latestStatus.CreatedAt) {
+		if !util.FromPointer(newestItem.PublishedParsed).After(latestStatus.CreatedAt) {
 			return nil
 		}
 

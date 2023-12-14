@@ -31,18 +31,34 @@ func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error 
 		}
 
 		for _, source := range sources {
-			jobName := getSchedulerJobName(source.Name)
-			_, err := s.Every(20).Second().Name(jobName).Do(h.FetchFeed(ctx, source))
-			if err != nil {
-				return errors.Wrapf(err, "failed to setup scheduler job. source name: %s", source.Name)
+			if err := scheduleNewJob(ctx, s, logger, source.Name, h.FetchFeed(ctx, source)); err != nil {
+				return errors.Wrap(err, "failed to schedule new job")
 			}
-			logger.Infof("%s successfully scheduled", jobName)
+
 		}
 
 		registerHooks(lc, s, logger)
+
+		h.scheduler = s
 		return nil
 	})
 
+}
+
+func scheduleNewJob(ctx context.Context, scheduler *gocron.Scheduler, logger *log.Logger, name string, job func() error) error {
+	jobName := getSchedulerJobName(name)
+
+	if scheduler.IsRunning() {
+		scheduler.Stop()
+		defer scheduler.StartAsync()
+	}
+
+	_, err := scheduler.Every(20).Second().Name(jobName).Do(job)
+	if err != nil {
+		return errors.Wrapf(err, "failed to setup scheduler job. source name: %s", name)
+	}
+	logger.Infof("%s successfully scheduled", jobName)
+	return nil
 }
 
 // registerHooks for uber fx
