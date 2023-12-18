@@ -35,13 +35,13 @@ var (
 
 type Handler struct {
 	parser      *gofeed.Parser
-	store       *store.Store[*repository.FeedRepository]
+	store       *store.Store[repository.FeedRepository]
 	activitypub *activitypub.Handler
 	log         *log.Logger
 	scheduler   *gocron.Scheduler
 }
 
-func NewHandler(s *store.Store[*repository.FeedRepository], log *log.Logger, activitypub *activitypub.Handler) *Handler {
+func NewHandler(s *store.Store[repository.FeedRepository], log *log.Logger, activitypub *activitypub.Handler) *Handler {
 	h := &Handler{
 		parser:      gofeed.NewParser(),
 		store:       s,

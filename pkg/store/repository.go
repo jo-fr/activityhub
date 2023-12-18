@@ -12,10 +12,11 @@ type Repository struct {
 }
 
 // IRepository is an interface defining methods for managing transactions with a database.
-type IRepository interface {
+type IRepository[T any] interface {
 	GetTX() *gorm.DB
 	SetTX(tx *gorm.DB)
 	GetCtxWithTx(ctx context.Context) context.Context
+	WithRepository() T
 }
 
 // NewRepository creates a new instance of the Repository.
@@ -24,23 +25,18 @@ func NewRepository() *Repository {
 }
 
 // GetCtxWithTx returns a new context with the current database transaction associated with the repository.
-func (e *Repository) GetCtxWithTx(ctx context.Context) context.Context {
+func (e Repository) GetCtxWithTx(ctx context.Context) context.Context {
 	return context.WithValue(ctx, contextWithTxKey{}, e.GetTX())
 }
 
 // GetTX returns the current database transaction associated with the repository.
-func (e *Repository) GetTX() *gorm.DB {
-	if e == nil {
-		return nil
-	}
+func (e Repository) GetTX() *gorm.DB {
 
 	return e.tx
 }
 
 // SetTX sets the database transaction for the repository.
 func (e *Repository) SetTX(tx *gorm.DB) {
-	if e == nil {
-		e = &Repository{}
-	}
 	e.tx = tx
+
 }

@@ -49,8 +49,11 @@ func scheduleNewJob(ctx context.Context, scheduler *gocron.Scheduler, logger *lo
 	jobName := getSchedulerJobName(name)
 
 	if scheduler.IsRunning() {
-		scheduler.Stop()
-		defer scheduler.StartAsync()
+		scheduler.PauseJobExecution(true)
+		defer func() {
+			scheduler.StartAsync()
+			logger.Info("scheduler restarted")
+		}()
 	}
 
 	_, err := scheduler.Every(20).Second().Name(jobName).Do(job)

@@ -6,16 +6,14 @@ import (
 )
 
 var Module = fx.Options(
-	fx.Provide(NewFeedRepository),
-	fx.Provide(store.NewStore[*FeedRepository]),
+	fx.Provide(store.NewStore[FeedRepository]),
 )
 
 type FeedRepository struct {
 	*store.Repository
 }
 
-func NewFeedRepository() *FeedRepository {
-	return &FeedRepository{
-		Repository: store.NewRepository(),
-	}
+func (e FeedRepository) WithRepository() FeedRepository {
+	e.Repository = store.NewRepository()
+	return e
 }
