@@ -34,7 +34,6 @@ func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error 
 			if err := scheduleNewJob(ctx, s, logger, source.Name, h.FetchFeed(ctx, source)); err != nil {
 				return errors.Wrap(err, "failed to schedule new job")
 			}
-
 		}
 
 		registerHooks(lc, s, logger)
@@ -48,18 +47,11 @@ func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error 
 func scheduleNewJob(ctx context.Context, scheduler *gocron.Scheduler, logger *log.Logger, name string, job func() error) error {
 	jobName := getSchedulerJobName(name)
 
-	if scheduler.IsRunning() {
-		scheduler.PauseJobExecution(true)
-		defer func() {
-			scheduler.StartAsync()
-			logger.Info("scheduler restarted")
-		}()
-	}
-
 	_, err := scheduler.Every(20).Second().Name(jobName).Do(job)
 	if err != nil {
 		return errors.Wrapf(err, "failed to setup scheduler job. source name: %s", name)
 	}
+
 	logger.Infof("%s successfully scheduled", jobName)
 	return nil
 }
@@ -84,6 +76,7 @@ func registerHooks(lc fx.Lifecycle, scheduler *gocron.Scheduler, logger *log.Log
 
 func (h *Handler) FetchFeed(ctx context.Context, source model.SourceFeed) func() error {
 	return func() error {
+		fmt.Println("FetchFeed", source.Name)
 		if err := h.FetchSourceFeedUpdates(ctx, source); err != nil {
 			return errors.Wrap(err, "failed to fetch source feed")
 		}

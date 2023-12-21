@@ -88,8 +88,8 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceF
 		name := fmt.Sprintf("%s ActivityHub Bot", title)
 		summary := fmt.Sprintf("This is the ActivityHub Bot of %s. This is NOT an offical account and is not related with the owners of the posted content. Posting entries of RSS feed.", title)
 
-		ctx = e.GetCtxWithTx(ctx)
-		account, err := h.activitypub.CreateAccount(ctx, accountUsername, name, summary)
+		ctxWithTx := e.GetCtxWithTx(ctx)
+		account, err := h.activitypub.CreateAccount(ctxWithTx, accountUsername, name, summary)
 		if err != nil {
 			return errors.Wrap(err, "failed to create account")
 		}
@@ -110,13 +110,14 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceF
 			return errors.Wrap(err, "failed to create source feed")
 		}
 
-		scheduleNewJob(ctx, h.scheduler, h.log, sourceFeed.Name, h.FetchFeed(ctx, sourceFeed))
+		if err := scheduleNewJob(context.Background(), h.scheduler, h.log, sourceFeed.Name, h.FetchFeed(context.Background(), sourceFeed)); err != nil {
+			return errors.Wrap(err, "failed to schedule new job")
+		}
 
 		return nil
 	})
 
 	return sourceFeed, err
-
 }
 
 func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.SourceFeed) error {
