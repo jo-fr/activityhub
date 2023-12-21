@@ -31,7 +31,7 @@ func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error 
 		}
 
 		for _, source := range sources {
-			if err := scheduleNewJob(ctx, s, logger, source.Name, h.FetchFeed(ctx, source)); err != nil {
+			if err := scheduleNewJob(ctx, s, logger, source.Name, h.FetchFeed(context.Background(), source)); err != nil {
 				return errors.Wrap(err, "failed to schedule new job")
 			}
 		}
@@ -76,7 +76,6 @@ func registerHooks(lc fx.Lifecycle, scheduler *gocron.Scheduler, logger *log.Log
 
 func (h *Handler) FetchFeed(ctx context.Context, source model.SourceFeed) func() error {
 	return func() error {
-		fmt.Println("FetchFeed", source.Name)
 		if err := h.FetchSourceFeedUpdates(ctx, source); err != nil {
 			return errors.Wrap(err, "failed to fetch source feed")
 		}

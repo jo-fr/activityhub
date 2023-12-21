@@ -110,7 +110,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceF
 			return errors.Wrap(err, "failed to create source feed")
 		}
 
-		if err := scheduleNewJob(context.Background(), h.scheduler, h.log, sourceFeed.Name, h.FetchFeed(context.Background(), sourceFeed)); err != nil {
+		if err := scheduleNewJob(ctx, h.scheduler, h.log, sourceFeed.Name, h.FetchFeed(context.Background(), sourceFeed)); err != nil {
 			return errors.Wrap(err, "failed to schedule new job")
 		}
 
