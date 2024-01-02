@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
@@ -24,5 +25,33 @@ func (a *API) AddNewFeedSource() http.HandlerFunc {
 		}
 
 		render.Success(r.Context(), sourceFeed, http.StatusCreated, w, a.log)
+	}
+}
+
+func (a *API) ListFeedSources() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		offset, err := strconv.ParseInt(r.FormValue("offset"), 10, 32)
+		if err != nil || offset == 0 {
+			offset = offsetDefault
+		}
+
+		limit, err := strconv.ParseInt(r.FormValue("limit"), 10, 32)
+		if err != nil || limit == 0 {
+			limit = limitDefault
+		}
+
+		totalCount, sources, err := a.feed.ListSourceFeeds(r.Context(), int(offset), int(limit))
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		resp := externalmodel.ListSourcesFeedResponse{
+			Total: totalCount,
+			Items: sources,
+		}
+
+		render.Success(r.Context(), resp, http.StatusOK, w, a.log)
 	}
 }

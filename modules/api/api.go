@@ -17,6 +17,11 @@ import (
 	"go.uber.org/fx"
 )
 
+const (
+	offsetDefault = 0
+	limitDefault  = 100
+)
+
 var Module = fx.Options(
 	fx.Invoke(ProvideAPI),
 )
@@ -108,6 +113,7 @@ func (a *API) registerRoutes() {
 
 	a.Route("/api", func(r chi.Router) {
 		r.Post("/feed", a.AddNewFeedSource())
+		r.Get("/feed", a.ListFeedSources())
 	})
 
 }

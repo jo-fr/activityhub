@@ -161,6 +161,26 @@ func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.S
 
 }
 
+func (h *Handler) ListSourceFeeds(ctx context.Context, offset int, limit int) (totalCount int, feeds []model.SourceFeed, err error) {
+	var sources []model.SourceFeed
+	err = h.store.Execute(ctx, func(e *repository.FeedRepository) error {
+
+		count, err := e.CountSourceFeeds()
+		if err != nil {
+			return errors.Wrap(err, "failed to count source feeds")
+		}
+		totalCount = int(count)
+
+		sources, err = e.ListSourceFeeds(offset, limit)
+		if err != nil {
+			return errors.Wrap(err, "failed to get source feeds")
+		}
+		return nil
+	})
+
+	return totalCount, sources, err
+}
+
 func builtPost(title string, description string, link string) string {
 
 	// sanatize

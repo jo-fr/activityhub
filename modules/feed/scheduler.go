@@ -25,7 +25,7 @@ func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error 
 			}),
 		)
 
-		sources, err := e.ListSourceFeeds()
+		sources, err := e.ListSourceFeeds(0, 100000)
 		if err != nil {
 			return errors.Wrap(err, "failed to get source feeds")
 		}

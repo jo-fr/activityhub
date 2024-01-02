@@ -27,9 +27,24 @@ func (e *FeedRepository) GetSourceFeedWithID(id string) (model.SourceFeed, error
 	return source, nil
 }
 
-func (e *FeedRepository) ListSourceFeeds() ([]model.SourceFeed, error) {
+func (e *FeedRepository) CountSourceFeeds() (int64, error) {
+	var count int64
+	if err := e.GetTX().Model(&model.SourceFeed{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (e *FeedRepository) ListSourceFeeds(offset int, limit int) ([]model.SourceFeed, error) {
 	var sources []model.SourceFeed
-	if err := e.GetTX().Order("created_at DESC").Find(&sources).Error; err != nil {
+	err := e.GetTX().
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&sources).
+		Error
+
+	if err != nil {
 		return nil, err
 	}
 	return sources, nil
