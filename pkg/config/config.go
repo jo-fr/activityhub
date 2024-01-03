@@ -31,6 +31,10 @@ type Config struct {
 		Password string `envconfig:"DB_PASSWORD" required:"true"`
 		Database string `envconfig:"DB_DATABASE" required:"true"`
 	}
+
+	GCP struct {
+		ProjectID string `envconfig:"GCP_PROJECT_ID" required:"true"`
+	}
 }
 
 func ProvideConfig() (Config, error) {
