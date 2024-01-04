@@ -98,6 +98,7 @@ func (a *API) registerRoutes() {
 		w.Write([]byte("OK"))
 	})
 
+	a.Get("/robots.txt", a.ServeRobotstxt())
 	a.Get("/.well-known/webfinger", a.getWebfinger())
 
 	// /users endpoints
@@ -119,4 +120,23 @@ func (a *API) registerRoutes() {
 		r.Get("/feed", a.ListFeedSources())
 	})
 
+}
+
+func (a *API) ServeRobotstxt() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		content := `
+# See http://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: *
+Disallow: /media_proxy/
+Disallow: /interact/
+`
+
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(content))
+	}
 }
