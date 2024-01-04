@@ -186,6 +186,22 @@ func (h *Handler) ListSourceFeeds(ctx context.Context, offset int, limit int) (t
 	return totalCount, sources, err
 }
 
+func (h *Handler) GetSourceFeed(ctx context.Context, id string) (sourceFeed model.SourceFeed, err error) {
+	err = h.store.Execute(ctx, func(e *repository.FeedRepository) error {
+		sourceFeed, err = e.GetSourceFeedWithID(id)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errutil.NewError(errutil.TypeNotFound, "source feed not found")
+			}
+
+			return errors.Wrap(err, "failed to get source feed")
+		}
+		return nil
+	})
+
+	return sourceFeed, err
+}
+
 func builtPost(title string, description string, link string) string {
 
 	// sanatize

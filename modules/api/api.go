@@ -118,6 +118,7 @@ func (a *API) registerRoutes() {
 	a.Route("/api", func(r chi.Router) {
 		r.Post("/feed", a.AddNewFeedSource())
 		r.Get("/feed", a.ListFeedSources())
+		r.Get("/feed/{id}", a.GetFeedSource())
 	})
 
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
@@ -53,5 +54,19 @@ func (a *API) ListFeedSources() http.HandlerFunc {
 		}
 
 		render.Success(r.Context(), resp, http.StatusOK, w, a.log)
+	}
+}
+
+func (a *API) GetFeedSource() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+		source, err := a.feed.GetSourceFeed(r.Context(), id)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		render.Success(r.Context(), source, http.StatusOK, w, a.log)
 	}
 }
