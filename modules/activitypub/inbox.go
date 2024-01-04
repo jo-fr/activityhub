@@ -6,27 +6,36 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/repository"
 	"github.com/jo-fr/activityhub/modules/activitypub/models"
 
+	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
+	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
-func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmodel.Activity) error {
-	return h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
-		obj, ok := activity.Object.(string)
-		if !ok {
-			return errors.New("activity object is not a string")
-		}
+var (
+	ErrUnsupportedActivityType = errutil.NewError(errutil.TypeBadRequest, "unsupported activity type")
+)
 
-		accountName := getAccountFromURI(obj)
-		account, err := e.GetAccoutByUsername(accountName)
+func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmodel.Activity) error {
+	var account models.Account
+	var object string
+	err := h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
+		actor, _object, err := extractActorAndObject(ctx, activity)
+		if err != nil {
+			return errors.Wrap(err, "failed to extract actor and object")
+		}
+		object = _object
+		accountName := getAccountFromURI(object)
+		account, err = e.GetAccoutByUsername(accountName)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return ErrActorNotFound
@@ -34,28 +43,77 @@ func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmod
 			return errors.Wrap(err, "failed to get actor from db")
 		}
 
-		_, err = e.CreateFollow(account.ID, activity.Actor)
-		if err != nil {
-			return errors.Wrap(err, "failed to create follow")
+		switch activity.Type {
+		case "Follow":
+			if _, err := e.CreateFollow(account.ID, actor); err != nil {
+				return errors.Wrap(err, "failed to create follow")
+			}
+		case "Undo":
+			fmt.Println(account.ID, actor)
+			if err := e.DeleteFollow(account.ID, actor); err != nil {
+				return errors.Wrap(err, "failed to delete follow")
+			}
+		default:
+			return ErrUnsupportedActivityType
 		}
-
-		if err := returnAcceptActivity(ctx, account, activity); err != nil {
-			return errors.Wrap(err, "failed to return accept activity")
-		}
-
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	if err = returnAcceptActivity(ctx, account, object, activity); err != nil {
+		return errors.Wrap(err, "failed to return accept activity")
+	}
+
+	return nil
 }
 
-func returnAcceptActivity(ctx context.Context, account models.Account, activity externalmodel.Activity) error {
+func extractActorAndObject(ctx context.Context, activity externalmodel.Activity) (actor string, object string, err error) {
 
-	obj := activity.Object.(string)
+	switch activity.Type {
+	case "Follow":
+		actor = activity.Actor
+		object, ok := activity.Object.(string)
+		if !ok {
+			return "", "", errors.New("object must be string for follow activity")
+		}
+
+		return actor, object, nil
+
+	case "Undo":
+		actor = activity.Actor
+		var nestedActivity externalmodel.Activity
+		if err := mapstructure.Decode(activity.Object, &nestedActivity); err != nil {
+			return "", "", errors.Wrap(err, "failed to decode nested activity")
+		}
+
+		if nestedActivity.Type != "Follow" {
+			return "", "", ErrUnsupportedActivityType
+		}
+
+		fmt.Println(reflect.TypeOf(nestedActivity.Object))
+
+		obj, ok := nestedActivity.Object.(string)
+		if !ok {
+			return "", "", errors.New("object must be string for follow activity")
+		}
+		fmt.Println(obj)
+
+		return actor, obj, nil
+	default:
+		return "", "", ErrUnsupportedActivityType
+	}
+}
+
+func returnAcceptActivity(ctx context.Context, account models.Account, actor string, activity externalmodel.Activity) error {
 
 	ma := externalmodel.Activity{
 		Context: "https://www.w3.org/ns/activitystreams",
 		ID:      activity.ID,
 		Type:    "Accept",
-		Actor:   obj,
+		Actor:   actor,
 		Object:  activity,
 	}
 
@@ -74,7 +132,7 @@ func returnAcceptActivity(ctx context.Context, account models.Account, activity 
 		return errors.Wrap(err, "failed to create request")
 	}
 
-	if err := req.Sign(account.PrivateKey, obj); err != nil {
+	if err := req.Sign(account.PrivateKey, actor); err != nil {
 		return errors.Wrap(err, "failed to sign request")
 	}
 

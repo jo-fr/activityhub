@@ -17,6 +17,13 @@ func (e *ActivityHubRepository) CreateFollow(accountIDFollowed string, accountUR
 	return follower, nil
 }
 
+func (e *ActivityHubRepository) DeleteFollow(accountIDFollowed string, accountURIFollowing string) error {
+	return e.GetTX().
+		Where("account_id_followed = ? AND account_uri_following = ?", accountIDFollowed, accountURIFollowing).
+		Delete(&models.Follower{}).
+		Error
+}
+
 func (e *ActivityHubRepository) GetFollowersOfAccount(accountID string) ([]models.Follower, error) {
 	var followers []models.Follower
 
