@@ -9,6 +9,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/api/internal/render"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
+	"github.com/jo-fr/activityhub/pkg/pubsub"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
 )
 
@@ -64,29 +65,18 @@ func (a *API) ReceiveActivity() http.HandlerFunc {
 			return
 		}
 
-		err = a.activitypub.ReceiveInboxActivity(r.Context(), activity)
-		if err != nil {
-			a.log.Info(activity)
+		if err := a.pubsub.Publish(r.Context(), pubsub.TopicInbox, activity); err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
 		}
 
-		render.Success(r.Context(), nil, http.StatusOK, w, a.log)
+		render.Success(r.Context(), nil, http.StatusAccepted, w, a.log)
 	}
 
 }
 
-type OrderedCollection struct {
-	Context      string   `json:"@context"`
-	ID           string   `json:"id"`
-	Type         string   `json:"type"`
-	TotalItems   int      `json:"totalItems"`
-	OrderedItems []string `json:"orderedItems"`
-}
-
 func (a *API) FollowingEndpoint() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		actorName := chi.URLParam(r, "actorName")
 		// check if actor exists on instance
 		_, err := a.activitypub.GetActor(r.Context(), actorName)
@@ -95,9 +85,10 @@ func (a *API) FollowingEndpoint() http.HandlerFunc {
 			return
 		}
 
-		following := OrderedCollection{
+		// always returns empty collection because following is not supported
+		following := externalmodel.OrderedCollection{
 			Context:      "https://www.w3.org/ns/activitystreams",
-			ID:           fmt.Sprintf("https://%s/users/joni/following", a.hostURL),
+			ID:           fmt.Sprintf("https://%s/users/%s/following", a.hostURL, actorName),
 			Type:         "OrderedCollection",
 			TotalItems:   0,
 			OrderedItems: []string{},

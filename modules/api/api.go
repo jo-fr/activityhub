@@ -13,6 +13,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/feed"
 	"github.com/jo-fr/activityhub/pkg/config"
 	"github.com/jo-fr/activityhub/pkg/log"
+	"github.com/jo-fr/activityhub/pkg/pubsub"
 
 	"go.uber.org/fx"
 )
@@ -31,16 +32,18 @@ type API struct {
 	log     *log.Logger
 	hostURL string
 
+	pubsub      *pubsub.Client
 	activitypub *activitypub.Handler
 	feed        *feed.Handler
 }
 
-func ProvideAPI(lc fx.Lifecycle, config config.Config, logger *log.Logger, activitypub *activitypub.Handler, feed *feed.Handler) *API {
+func ProvideAPI(lc fx.Lifecycle, config config.Config, logger *log.Logger, pubsub *pubsub.Client, activitypub *activitypub.Handler, feed *feed.Handler) *API {
 
 	api := &API{
 		Mux:         chi.NewRouter(),
 		log:         logger,
 		hostURL:     config.HostURL,
+		pubsub:      pubsub,
 		activitypub: activitypub,
 		feed:        feed,
 	}

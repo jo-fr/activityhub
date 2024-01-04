@@ -10,6 +10,8 @@ import (
 var Module = fx.Options(
 	repository.Module,
 	fx.Provide(ProvideHandler),
+	fx.Provide(NewConsumer),
+	fx.Invoke(Subscribe),
 )
 
 type Handler struct {

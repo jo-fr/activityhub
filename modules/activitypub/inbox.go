@@ -22,7 +22,7 @@ func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmod
 	return h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
 		obj, ok := activity.Object.(string)
 		if !ok {
-			return errors.New("object is not a string")
+			return errors.New("activity object is not a string")
 		}
 
 		accountName := getAccountFromURI(obj)

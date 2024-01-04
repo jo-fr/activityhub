@@ -13,6 +13,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/feed/model"
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/log"
+	"github.com/jo-fr/activityhub/pkg/pubsub"
 	"github.com/jo-fr/activityhub/pkg/store"
 	"github.com/jo-fr/activityhub/pkg/util"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
@@ -37,16 +38,18 @@ type Handler struct {
 	parser      *gofeed.Parser
 	store       *store.Store[repository.FeedRepository]
 	activitypub *activitypub.Handler
+	pubsub      *pubsub.Client
 	log         *log.Logger
 	scheduler   *gocron.Scheduler
 }
 
-func NewHandler(s *store.Store[repository.FeedRepository], log *log.Logger, activitypub *activitypub.Handler) *Handler {
+func NewHandler(s *store.Store[repository.FeedRepository], log *log.Logger, activitypub *activitypub.Handler, pubsub *pubsub.Client) *Handler {
 	h := &Handler{
 		parser:      gofeed.NewParser(),
 		store:       s,
 		log:         log,
 		activitypub: activitypub,
+		pubsub:      pubsub,
 	}
 
 	return h
@@ -149,12 +152,14 @@ func (h *Handler) FetchSourceFeedUpdates(ctx context.Context, sourceFeed model.S
 			AccountID: sourceFeed.AccountID,
 		}
 
-		_, err = e.CreateStatus(status)
+		status, err = e.CreateStatus(status)
 		if err != nil {
 			return errors.Wrap(err, "failed to create status")
 		}
 
-		// put status into queue
+		if err := h.pubsub.Publish(ctx, pubsub.TopicOutbox, status); err != nil {
+			return errors.Wrap(err, "failed to publish status")
+		}
 
 		return nil
 	})

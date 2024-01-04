@@ -2,9 +2,11 @@ package pubsub
 
 import (
 	"context"
+	"encoding/json"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/jo-fr/activityhub/pkg/config"
+	"github.com/jo-fr/activityhub/pkg/log"
 	"github.com/pkg/errors"
 	"go.uber.org/fx"
 	"google.golang.org/api/option"
@@ -18,26 +20,47 @@ type Client struct {
 	googleClient *pubsub.Client
 }
 
-func NewClient(c config.Config) (*Client, error) {
+func NewClient(lc fx.Lifecycle, c config.Config, log *log.Logger) (*Client, error) {
 	googleClient, err := pubsub.NewClient(context.Background(), c.GCP.ProjectID, option.WithoutAuthentication())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create pubsub client")
 	}
 
-	return &Client{
+	client := &Client{
 		googleClient: googleClient,
-	}, nil
+	}
+
+	registerHooks(lc, client, log)
+	log.Info("pubsub client created")
+	return client, nil
 
 }
 
-func (c *Client) Publish(ctx context.Context, topic string, msg []byte) error {
+// registerHooks for uber fx
+func registerHooks(lc fx.Lifecycle, c *Client, logger *log.Logger) {
+	lc.Append(
+		fx.Hook{
+			OnStop: func(context.Context) error {
+				logger.Info("closing pubsub connection")
+				return c.googleClient.Close()
+			},
+		},
+	)
+}
+
+func (c *Client) Publish(ctx context.Context, topic Topic, msg any) error {
+
+	json, err := json.Marshal(msg)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal message")
+	}
 
 	t, err := getOrCreateTopic(ctx, c, topic)
 	if err != nil {
 		return errors.Wrap(err, "failed to get or create topic")
 	}
 
-	res := t.Publish(ctx, &pubsub.Message{Data: msg})
+	res := t.Publish(ctx, &pubsub.Message{Data: json})
 
 	if _, err := res.Get(ctx); err != nil {
 		return errors.Wrap(err, "failed to publish message")
@@ -46,7 +69,7 @@ func (c *Client) Publish(ctx context.Context, topic string, msg []byte) error {
 	return nil
 }
 
-func (c *Client) Subscribe(ctx context.Context, topic string, subscriberID string, handler func(ctx context.Context, msg *pubsub.Message)) error {
+func (c *Client) Subscribe(ctx context.Context, topic Topic, subscriberID string, handler func(ctx context.Context, msg *pubsub.Message)) error {
 
 	sub, err := getOrCreateSubscription(ctx, c, topic, subscriberID)
 	if err != nil {
@@ -61,8 +84,8 @@ func (c *Client) Subscribe(ctx context.Context, topic string, subscriberID strin
 	return nil
 }
 
-func getOrCreateTopic(ctx context.Context, client *Client, topicID string) (*pubsub.Topic, error) {
-	t := client.googleClient.Topic(topicID)
+func getOrCreateTopic(ctx context.Context, client *Client, topicID Topic) (*pubsub.Topic, error) {
+	t := client.googleClient.Topic(topicID.String())
 	ok, err := t.Exists(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to check if topic exists")
@@ -70,11 +93,11 @@ func getOrCreateTopic(ctx context.Context, client *Client, topicID string) (*pub
 	if ok {
 		return t, nil
 	}
-	return client.googleClient.CreateTopic(ctx, topicID)
+	return client.googleClient.CreateTopic(ctx, topicID.String())
 }
 
-func getOrCreateSubscription(ctx context.Context, client *Client, topicID string, subscriberID string) (*pubsub.Subscription, error) {
-	t, err := getOrCreateTopic(ctx, client, topicID)
+func getOrCreateSubscription(ctx context.Context, client *Client, topicID Topic, subscriberID string) (*pubsub.Subscription, error) {
+	t, err := getOrCreateTopic(ctx, client, Topic(topicID.String()))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get or create topic")
 	}

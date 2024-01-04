@@ -16,6 +16,22 @@ import (
 	"github.com/pkg/errors"
 )
 
+func (h *Handler) SendPostToFollowers(ctx context.Context, sendingActorID string, content string) error {
+	return h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
+		followers, err := e.GetFollowersOfAccount(sendingActorID)
+		if err != nil {
+			return errors.Wrap(err, "failed to get followers of account")
+		}
+
+		for _, follower := range followers {
+			if err := h.SendPost(ctx, sendingActorID, follower.AccountURIFollowing, content); err != nil {
+				return errors.Wrap(err, "failed to send post")
+			}
+		}
+		return nil
+	})
+}
+
 func (h *Handler) SendPost(ctx context.Context, sendingActorID string, sendToURI string, content string) error {
 	return h.store.Execute(ctx, func(e *repository.ActivityHubRepository) error {
 		account, err := e.GetAccountByID(sendingActorID)
