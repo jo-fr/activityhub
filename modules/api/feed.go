@@ -11,10 +11,10 @@ import (
 	"github.com/jo-fr/activityhub/pkg/validate"
 )
 
-func (a *API) AddNewFeedSource() http.HandlerFunc {
+func (a *API) AddNewFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		req, err := httputil.UnmarshalBody[externalmodel.AddFeedSourceRequest](r.Body)
+		req, err := httputil.UnmarshalBody[externalmodel.AddFeedRequest](r.Body)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
@@ -25,17 +25,17 @@ func (a *API) AddNewFeedSource() http.HandlerFunc {
 			return
 		}
 
-		sourceFeed, err := a.feed.AddNewSourceFeed(r.Context(), req.FeedURL)
+		feed, err := a.feed.AddNewFeed(r.Context(), req.FeedURL)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
 		}
 
-		render.Success(r.Context(), sourceFeed, http.StatusCreated, w, a.log)
+		render.Success(r.Context(), feed, http.StatusCreated, w, a.log)
 	}
 }
 
-func (a *API) ListFeedSources() http.HandlerFunc {
+func (a *API) ListFeeds() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		offset, err := strconv.ParseInt(r.FormValue("offset"), 10, 32)
@@ -48,7 +48,7 @@ func (a *API) ListFeedSources() http.HandlerFunc {
 			limit = limitDefault
 		}
 
-		totalCount, sources, err := a.feed.ListSourceFeeds(r.Context(), int(offset), int(limit))
+		totalCount, sources, err := a.feed.ListFeeds(r.Context(), int(offset), int(limit))
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
@@ -63,7 +63,7 @@ func (a *API) ListFeedSources() http.HandlerFunc {
 	}
 }
 
-func (a *API) GetFeedSource() http.HandlerFunc {
+func (a *API) GetFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		id := chi.URLParam(r, "id")
@@ -72,7 +72,7 @@ func (a *API) GetFeedSource() http.HandlerFunc {
 			return
 		}
 
-		source, err := a.feed.GetSourceFeed(r.Context(), id)
+		source, err := a.feed.GetFeed(r.Context(), id)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return

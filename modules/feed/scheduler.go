@@ -25,9 +25,9 @@ func ScheduleFeedFetcher(lc fx.Lifecycle, logger *log.Logger, h *Handler) error 
 			}),
 		)
 
-		sources, err := e.ListSourceFeeds(0, 100000)
+		sources, err := e.ListFeeds(0, 100000)
 		if err != nil {
-			return errors.Wrap(err, "failed to get source feeds")
+			return errors.Wrap(err, "failed to get feeds")
 		}
 
 		for _, source := range sources {
@@ -74,10 +74,10 @@ func registerHooks(lc fx.Lifecycle, scheduler *gocron.Scheduler, logger *log.Log
 		})
 }
 
-func (h *Handler) FetchFeed(ctx context.Context, source model.SourceFeed) func() error {
+func (h *Handler) FetchFeed(ctx context.Context, source model.Feed) func() error {
 	return func() error {
-		if err := h.FetchSourceFeedUpdates(ctx, source); err != nil {
-			return errors.Wrap(err, "failed to fetch source feed")
+		if err := h.FetchFeedUpdates(ctx, source); err != nil {
+			return errors.Wrap(err, "failed to fetch feed")
 		}
 		return nil
 	}

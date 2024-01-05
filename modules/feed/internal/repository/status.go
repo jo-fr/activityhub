@@ -4,7 +4,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/feed/model"
 )
 
-func (e *FeedRepository) GetLatestStatusFromSourceFeed(accountID string) (model.Status, error) {
+func (e *FeedRepository) GetLatestStatusFromFeed(accountID string) (model.Status, error) {
 	var status model.Status
 	err := e.GetTX().
 		Order("created_at DESC").
