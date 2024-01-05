@@ -10,14 +10,14 @@ const (
 
 type SourceFeed struct {
 	sharedmodel.BaseModel
-	Name        string
-	Type        SourceFeedType
-	FeedURL     string
-	HostURL     string
-	Author      string
-	Description string
-	ImageURL    string
-	AccountID   string
+	Name        string         `json:"name"`
+	Type        SourceFeedType `json:"type"`
+	FeedURL     string         `json:"feedURL"`
+	HostURL     string         `json:"hostURL"`
+	Author      string         `json:"author"`
+	Description string         `json:"description"`
+	ImageURL    string         `json:"imageURL"`
+	AccountID   string         `json:"accountID"`
 }
 
 func (*SourceFeed) TableName() string {

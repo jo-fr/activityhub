@@ -23,7 +23,7 @@ const (
 
 type errorResponse struct {
 	Reason    ErrorReason              `json:"reason"`
-	RequestID string                   `json:"request_id,omitempty"`
+	RequestID string                   `json:"requestID,omitempty"`
 	Errors    []errutil.AnnotatedError `json:"errors"`
 }
 
