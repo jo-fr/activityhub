@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
 
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
@@ -49,7 +48,6 @@ func (h *Handler) ReceiveInboxActivity(ctx context.Context, activity externalmod
 				return errors.Wrap(err, "failed to create follow")
 			}
 		case "Undo":
-			fmt.Println(account.ID, actor)
 			if err := e.DeleteFollow(account.ID, actor); err != nil {
 				return errors.Wrap(err, "failed to delete follow")
 			}
@@ -93,13 +91,10 @@ func extractActorAndObject(ctx context.Context, activity externalmodel.Activity)
 			return "", "", ErrUnsupportedActivityType
 		}
 
-		fmt.Println(reflect.TypeOf(nestedActivity.Object))
-
 		obj, ok := nestedActivity.Object.(string)
 		if !ok {
 			return "", "", errors.New("object must be string for follow activity")
 		}
-		fmt.Println(obj)
 
 		return actor, obj, nil
 	default:

@@ -7,34 +7,54 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/jo-fr/activityhub/pkg/errutil"
 	"github.com/jo-fr/activityhub/pkg/log"
 )
 
+// ErrorReason is the reason for the error
+type ErrorReason string
+
+const (
+	ReasonAPIError     ErrorReason = "api_error"
+	ReasonRequestError ErrorReason = "request_error"
+)
+
 type errorResponse struct {
-	Errors []errutil.AnnotatedError `json:"errors"`
+	Reason    ErrorReason              `json:"reason"`
+	RequestID string                   `json:"request_id,omitempty"`
+	Errors    []errutil.AnnotatedError `json:"errors"`
 }
 
 // Error processes internal errors and returns a JSON response.
 func Error(ctx context.Context, err error, w http.ResponseWriter, log *log.Logger) {
-	annerr, ok := errutil.ExtractAnnotedError(err)
-	if !ok {
-		annerr = errutil.InternalServerError
+	var errorResponse errorResponse
+	var statusCode int
+	switch errType := err.(type) {
+	case validator.ValidationErrors:
+		annotatedErrors := errutil.ValidationErrorsToAnnotatedError(errType)
+		errorResponse = toErrorResponse(ReasonRequestError, middleware.GetReqID(ctx), annotatedErrors...)
+		statusCode = http.StatusBadRequest
+	case errutil.AnnotatedError:
+		errorResponse = toErrorResponse(ReasonRequestError, middleware.GetReqID(ctx), errType)
+		statusCode = errType.HTTPStatusCode()
+	default:
+		annerr := errutil.InternalServerError
+		errorResponse = toErrorResponse(ReasonAPIError, middleware.GetReqID(ctx), annerr)
+		statusCode = annerr.HTTPStatusCode()
 		log.Error(err)
-	} else {
-		annerr.Reason = errutil.ReasonRequestError
 	}
 
-	annerr.RequestID = middleware.GetReqID(ctx)
-
-	json, _ := json.Marshal(toErrorResponse(annerr))
-	w.WriteHeader(annerr.HTTPStatusCode())
+	json, _ := json.Marshal(errorResponse)
+	w.WriteHeader(statusCode)
 	w.Write(json)
 }
 
-func toErrorResponse(err ...errutil.AnnotatedError) errorResponse {
+func toErrorResponse(reason ErrorReason, reqID string, err ...errutil.AnnotatedError) errorResponse {
 	return errorResponse{
-		Errors: err,
+		Reason:    reason,
+		RequestID: reqID,
+		Errors:    err,
 	}
 }

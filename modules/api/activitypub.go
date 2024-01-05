@@ -11,6 +11,7 @@ import (
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
 	"github.com/jo-fr/activityhub/pkg/pubsub"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
+	"github.com/jo-fr/activityhub/pkg/validate"
 )
 
 // api errors
@@ -61,6 +62,11 @@ func (a *API) ReceiveActivity() http.HandlerFunc {
 
 		activity, err := httputil.UnmarshalBody[externalmodel.Activity](r.Body)
 		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		if err := validate.Validator().Struct(activity); err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
 		}

@@ -12,6 +12,7 @@ import (
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/keys/httprequest"
 	"github.com/jo-fr/activityhub/modules/activitypub/internal/repository"
 	"github.com/jo-fr/activityhub/pkg/externalmodel"
+	"github.com/jo-fr/activityhub/pkg/util"
 	"github.com/jo-fr/activityhub/pkg/util/httputil"
 	"github.com/pkg/errors"
 )
@@ -58,7 +59,7 @@ func (h *Handler) SendPost(ctx context.Context, sendingActorID string, sendToURI
 				Type:      "Note",
 				Content:   content,
 				Published: time.Now().UTC().Format(time.RFC3339),
-				Sensitive: false,
+				Sensitive: util.ToPointer(false),
 			},
 			To: []string{"https://www.w3.org/ns/activitystreams#Public"},
 		}

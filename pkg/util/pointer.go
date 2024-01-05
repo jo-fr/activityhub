@@ -8,3 +8,8 @@ func FromPointer[T any](v *T) T {
 	}
 	return *v
 }
+
+// ToPointer returns a pointer to the given value.
+func ToPointer[T any](v T) *T {
+	return &v
+}

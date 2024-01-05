@@ -47,6 +47,10 @@ func SanitizeURL(urlStr string) (string, error) {
 		return "", err
 	}
 
+	if parsedURL.Host == "" {
+		return "", errors.New("invalid url")
+	}
+
 	parsedURL.RawQuery = ""
 	parsedURL.Path = strings.TrimSuffix(parsedURL.Path, "/")
 
