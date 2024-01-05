@@ -17,5 +17,5 @@ func Success(ctx context.Context, data any, statusCode int, w http.ResponseWrite
 	}
 
 	w.WriteHeader(statusCode)
-	w.Write(json)
+	w.Write(json) // nolint: errcheck
 }

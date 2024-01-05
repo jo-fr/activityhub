@@ -48,7 +48,7 @@ func Error(ctx context.Context, err error, w http.ResponseWriter, log *log.Logge
 
 	json, _ := json.Marshal(errorResponse)
 	w.WriteHeader(statusCode)
-	w.Write(json)
+	w.Write(json) // nolint: errcheck
 }
 
 func toErrorResponse(reason ErrorReason, reqID string, err ...errutil.AnnotatedError) errorResponse {

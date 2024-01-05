@@ -95,7 +95,7 @@ func (a *API) registerMiddlewares(l *log.Logger) {
 func (a *API) registerRoutes() {
 	a.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		w.Write([]byte("OK")) // nolint:errcheck
 	})
 
 	a.Get("/robots.txt", a.ServeRobotstxt())
@@ -138,6 +138,6 @@ Disallow: /interact/
 
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(content))
+		w.Write([]byte(content)) // nolint:errcheck
 	}
 }
