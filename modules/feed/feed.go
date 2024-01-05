@@ -77,7 +77,7 @@ func (h *Handler) AddNewSourceFeed(ctx context.Context, feedurl string) (sourceF
 		}
 
 		title := feed.Title
-		description := strings.ReplaceAll(feed.Description, "\n", " ")
+		description := strings.ReplaceAll(util.RemoveHTMLTags(feed.Description), "\n", " ")
 		authorsSlice := util.Map(feed.Authors, func(item *gofeed.Person, index int) string {
 			if item == nil {
 				return ""
