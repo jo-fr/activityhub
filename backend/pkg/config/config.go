@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"go.uber.org/fx"
@@ -21,6 +20,10 @@ const (
 	EnvironmentProd  environment = "PROD"
 )
 
+func (e environment) IsLocal() bool {
+	return e == EnvironmentLocal
+}
+
 type Config struct {
 	Environment environment `envconfig:"ENVIRONMENT" required:"true"`
 	HostURL     string      `envconfig:"HOST_URL" required:"true"`
@@ -38,11 +41,6 @@ type Config struct {
 }
 
 func ProvideConfig() (Config, error) {
-
-	// load variables from .env file
-	if err := godotenv.Load(); err != nil {
-		return Config{}, errors.Wrap(err, "failed to load env file")
-	}
 
 	// parse env variables to config struct
 	var config Config

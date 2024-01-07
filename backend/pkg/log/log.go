@@ -3,6 +3,7 @@ package log
 import (
 	"strings"
 
+	"github.com/jo-fr/activityhub/backend/pkg/config"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -20,15 +21,20 @@ type Logger struct {
 	*logrus.Logger
 }
 
-func ProvideLogger() *Logger {
+func ProvideLogger(config config.Config) *Logger {
 	logger := logrus.New()
 
-	formatter := &logrus.TextFormatter{
-		FullTimestamp: true,
-		ForceColors:   true,
+	if config.Environment.IsLocal() {
+		logger.SetLevel(logrus.DebugLevel)
+		logger.SetFormatter(&logrus.TextFormatter{
+			FullTimestamp: true,
+			ForceColors:   true,
+		})
+	} else {
+		logger.SetLevel(logrus.InfoLevel)
+		logger.SetFormatter(&logrus.JSONFormatter{})
 	}
 
-	logger.SetFormatter(formatter)
 	return &Logger{
 		Logger: logger,
 	}

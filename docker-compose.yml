@@ -25,6 +25,21 @@ services:
       ]
     ports:
       - "8085:8085"
+  api:
+    build:
+      context: "."
+      dockerfile: "./backend/Dockerfile"
+    image: "activityhub_api"
+    env-file:
+      - "./backend/.env"
+    depends_on:
+      - postgresql
+      - pub-sub-emulator
+    ports:
+      - "8080:8080"
+
+  networks:
+    - main
 volumes:
   db:
     driver: local

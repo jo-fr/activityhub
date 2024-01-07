@@ -9,7 +9,6 @@ import (
 	"github.com/jo-fr/activityhub/backend/pkg/log"
 	"github.com/pkg/errors"
 	"go.uber.org/fx"
-	"google.golang.org/api/option"
 )
 
 var Module = fx.Options(
@@ -21,7 +20,8 @@ type Client struct {
 }
 
 func NewClient(lc fx.Lifecycle, c config.Config, log *log.Logger) (*Client, error) {
-	googleClient, err := pubsub.NewClient(context.Background(), c.GCP.ProjectID, option.WithoutAuthentication())
+
+	googleClient, err := pubsub.NewClient(context.Background(), c.GCP.ProjectID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create pubsub client")
 	}
