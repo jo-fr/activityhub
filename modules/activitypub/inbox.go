@@ -135,6 +135,7 @@ func returnAcceptActivity(ctx context.Context, account models.Account, actor str
 	if err != nil {
 		return errors.Wrap(err, "failed to send request")
 	}
+	defer resp.Body.Close()
 
 	if !httputil.StatusOK(resp.StatusCode) {
 		errBody, err := httputil.UnmarshalBody[map[string]any](resp.Body)
