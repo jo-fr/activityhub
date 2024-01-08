@@ -16,7 +16,6 @@ type environment string
 // Defined environments
 const (
 	EnvironmentLocal environment = "LOCAL"
-	EnvironmentSTAGE environment = "STAGE"
 	EnvironmentProd  environment = "PROD"
 )
 
