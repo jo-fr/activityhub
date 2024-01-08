@@ -1,3 +1,4 @@
+# Build stage
 FROM golang:1.21 AS build-stage
 
 WORKDIR /app
@@ -5,22 +6,20 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-
-COPY ./pkg ./modules ./
+COPY ./pkg ./pkg
+COPY ./modules ./modules
 COPY ./main.go ./main.go
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app
+RUN CGO_ENABLED=0 GOOS=linux go build -o app
 
-
-# Deploy the application binary into a lean image
 FROM alpine:3.19
 
-WORKDIR /
+WORKDIR /app
 
-COPY ./pkg/database/migrations ./pkg/database/migrations
-COPY --from=build-stage /app /app
+COPY --from=build-stage /app/pkg/database/migrations ./pkg/database/migrations
+COPY --from=build-stage /app/app .
+
 
 EXPOSE 8080
-
 
 CMD ["./app"]
