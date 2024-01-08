@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"net/http"
 
@@ -51,15 +52,15 @@ func ProvideAPI(lc fx.Lifecycle, config config.Config, logger *log.Logger, pubsu
 	api.registerMiddlewares(logger)
 	api.registerRoutes()
 
-	registerHooks(lc, api, logger)
+	registerHooks(lc, api, logger, config.Port)
 
 	return api
 }
 
 // registerHooks for uber fx
-func registerHooks(lc fx.Lifecycle, api *API, logger *log.Logger) {
+func registerHooks(lc fx.Lifecycle, api *API, logger *log.Logger, port string) {
 
-	server := &http.Server{Addr: ":8080", Handler: api}
+	server := &http.Server{Addr: fmt.Sprintf(":%s", port), Handler: api}
 
 	lc.Append(
 		fx.Hook{

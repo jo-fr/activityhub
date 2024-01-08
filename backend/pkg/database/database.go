@@ -10,6 +10,9 @@ import (
 	postgresMigrate "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
+	// Needed for GCP Cloud SQL postgres proxy connection
+	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+
 	"github.com/pkg/errors"
 	"go.uber.org/fx"
 
@@ -26,7 +29,6 @@ var Module = fx.Options(
 
 const (
 	migrateFilesDir     = "pkg/database/migrations"
-	databaseName        = "activityhub"
 	schemaName          = "activityhub"
 	migrationsTableName = "schema_migrations"
 )
@@ -38,19 +40,30 @@ type Database struct {
 
 func ProvideDatabase(lc fx.Lifecycle, config config.Config, logger *log.Logger) (*Database, error) {
 
-	dbConfig := config.Database
-	dsn := getConnectionDSN(dbConfig.Username, dbConfig.Password, dbConfig.Database, dbConfig.Host, dbConfig.Port)
-	_db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   schemaName,
-			SingularTable: false,
-		}})
+	var _db *gorm.DB
+	if config.Environment.IsLocal() {
+		logger.Info("connecting to local database")
+		dsn := getConnectionDSN(config.Database.Username, config.Database.Password, config.Database.Database, config.Database.Host, config.Database.Port)
+		db, err := connectLocalDB(dsn)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to connect to local database")
+		}
+		_db = db
 
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect to database")
+	} else {
+
+		logger.Info("connecting to cloud sql database")
+
+		uri := fmt.Sprintf("%s:%s:%s", config.GCP.ProjectID, config.GCP.Region, config.Database.Host)
+		dsn := getConnectionDSN(config.Database.Username, config.Database.Password, config.Database.Database, uri, config.Database.Port)
+		db, err := connectCloudSQL(dsn)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to connect to cloud sql database")
+		}
+		_db = db
 	}
 
-	if err := runMigrations(_db, dbConfig.Database); err != nil {
+	if err := runMigrations(_db, config.Database.Database); err != nil {
 		return nil, errors.Wrap(err, "failed to run migrations")
 	}
 	logger.Info("migrations ran successfully")
@@ -126,6 +139,34 @@ func runMigrations(db *gorm.DB, dbName string) error {
 	}
 
 	return nil
+}
+
+func connectCloudSQL(dsn string) (*gorm.DB, error) {
+
+	postgresConfig := postgres.New(postgres.Config{
+		DriverName: "cloudsqlpostgres",
+		DSN:        dsn,
+	})
+
+	db, err := gorm.Open(postgresConfig, &gorm.Config{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to database")
+	}
+
+	return db, nil
+}
+
+func connectLocalDB(dsn string) (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   schemaName,
+			SingularTable: false,
+		}})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to database")
+	}
+
+	return db, nil
 }
 
 // getMigrationsFilePath returns the path to the migrations files

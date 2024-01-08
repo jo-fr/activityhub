@@ -1,0 +1,73 @@
+name: Build and Deploy
+on:
+  push:
+    branches:
+      - master
+
+env:
+  RUN_REGION: europe-west3
+  SERVICE_NAME: activityhub
+  IMAGE_PATH: docker.io/j0fr/activityhub
+
+jobs:
+  publish_docker_image:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PATH }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_PATH }}:${{ github.sha }}
+            ${{ env.IMAGE_PATH }}:latest
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy_cloud_run:
+    name: Deploy to Cloud Run
+    needs: publish_docker_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.GCP_SERVICE_ACCOUNT }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v2"
+      - name: "Use gcloud CLI"
+        run: |
+          gcloud components install beta && \
+          gcloud beta run deploy ${{ env.SERVICE_NAME }} \
+            --region=${{ env.RUN_REGION }} \
+            --image=${{ env.IMAGE_PATH }}:${{ github.sha }} \
+            --env-vars-file=./.github/workflows/env/.env-prod.yaml \
+             --set-secrets=DB_PASSWORD=db-activityhub-db-6d85542f-activityhub-user:latest \
+            --port=8080 \
+            --platform=managed \
+            --min-instances=1 \
+            --max-instances=1 \
+            --add-cloudsql-instances=activityhub-db-6d85542f \
+            --allow-unauthenticated \
+            --no-cpu-throttling \
+            --network=private-network \
+            --subnet=private-network \
+            --vpc-egress=private-ranges-only

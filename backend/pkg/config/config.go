@@ -24,6 +24,7 @@ func (e environment) IsLocal() bool {
 }
 
 type Config struct {
+	Port        string      `envconfig:"PORT" required:"true"`
 	Environment environment `envconfig:"ENVIRONMENT" required:"true"`
 	HostURL     string      `envconfig:"HOST_URL" required:"true"`
 	Database    struct {
@@ -36,6 +37,7 @@ type Config struct {
 
 	GCP struct {
 		ProjectID string `envconfig:"GCP_PROJECT_ID" required:"true"`
+		Region    string `envconfig:"GCP_REGION"`
 	}
 }
 

@@ -31,6 +31,8 @@ services:
       dockerfile: "./Dockerfile"
     image: "activityhub_api"
     env_file: ./backend/.env
+    environment:
+      - DB_HOST=postgresql
     depends_on:
       - postgresql
       - pub-sub-emulator
