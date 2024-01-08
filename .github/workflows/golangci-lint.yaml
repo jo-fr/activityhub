@@ -1,7 +1,8 @@
 name: golangci-lint
 on:
   pull_request:
-    - master
+    branches:
+      - master
 
 permissions:
   contents: read
