@@ -33,13 +33,16 @@ type Feed struct {
 
 func ExternalFeed(feed model.Feed, hostURL string) Feed {
 	return Feed{
-		CreatedAt: feed.CreatedAt.String(),
-		ID:        feed.ID,
-		Name:      feed.Name,
-		Type:      feed.Type,
-		FeedURL:   feed.FeedURL,
-		HostURL:   feed.HostURL,
-		Account:   ExternalAccount(feed.Account, hostURL),
+		CreatedAt:   feed.CreatedAt.String(),
+		ID:          feed.ID,
+		Name:        feed.Name,
+		Type:        feed.Type,
+		FeedURL:     feed.FeedURL,
+		HostURL:     feed.HostURL,
+		Author:      feed.Author,
+		Description: feed.Description,
+		ImageURL:    feed.ImageURL,
+		Account:     ExternalAccount(feed.Account, hostURL),
 	}
 
 }
