@@ -13,21 +13,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-
-interface Feed {
-  id: string
-  name: string
-  type: string
-  feedURL: string
-  hostURL: string
-  author: string
-  description: string
-  imageURL: string
-  accountID: string
-  account: {
-    preferredUsername: string
-  }
-}
+import { addFeed } from '../api/api'
 
 export default defineComponent({
   name: 'AddFeed',
@@ -40,29 +26,15 @@ export default defineComponent({
 
   methods: {
     async submitData() {
-      const response = await fetch('/api/feeds', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          feedURL: this.feedURL
-        })
-      })
-      if (!response.ok) {
-        if (response.status == 400) {
-          const jsonData = await response.json()
+      try {
+        const feed = await addFeed(this.feedURL)
 
-          this.errorMessage = jsonData.errors[0]?.message
+        if (feed) {
+          this.$router.push({ name: 'feedDetail', params: { username: feed.account.username } })
         }
-        throw new Error('error')
+      } catch (error) {
+        console.log(error)
       }
-
-      // Parse the JSON response
-      const jsonData = await response.json()
-      const feed: Feed = jsonData
-
-      this.$router.push({ name: 'feedDetail', params: { id: feed.id } })
     }
   }
 })

@@ -30,26 +30,8 @@
 import { defineComponent, ref, onMounted, defineProps } from 'vue'
 import { useRoute } from 'vue-router'
 import type { Ref } from 'vue'
-
-interface Feed {
-  id: string
-  name: string
-  type: string
-  feedURL: string
-  hostURL: string
-  author: string
-  description: string
-  imageURL: string
-  accountID: string
-  account: {
-    uri: string
-  }
-}
-
-interface Status {
-  createdAt: string
-  content: string
-}
+import type { Feed, Status } from '../models/models'
+import { fetchUserFeed, fetchFeedStatus } from '../api/api'
 
 export default defineComponent({
   name: 'FeedDetail',
@@ -64,31 +46,17 @@ export default defineComponent({
     // Fetch data from the API when the component is mounted
     onMounted(async () => {
       try {
-        // Make a fetch request using TypeScript
-        const response = await fetch(`/api/users/${route.params.username}/feed`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch data')
-        }
-        // Parse the JSON response
-        const jsonData = await response.json()
-        // Update the data property with the fetched data
-        data.value.feed = jsonData
+        const input = route.params.username
+        const username = Array.isArray(input) ? input[0] : input
+        data.value.feed = await fetchUserFeed(username)
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching user feed data:', error)
       }
+
       try {
-        // Make a fetch request using TypeScript
-        const response = await fetch(`/api/feeds/${data.value.feed?.id}/status?limit=10`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch data')
-        }
-        // Parse the JSON response
-        const jsonData = await response.json()
-        // Update the data property with the fetched data
-        console.log(jsonData)
-        data.value.status = jsonData.items
+        data.value.status = await fetchFeedStatus(data.value.feed?.id!)
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching feed status data:', error)
       }
     })
     return { data }
