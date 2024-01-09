@@ -37,7 +37,7 @@ func ExternalActor(host string, appHost string, acc models.Account) Actor {
 			"https://www.w3.org/ns/activitystreams",
 			"https://w3id.org/security/v1",
 		},
-		ID:                fmt.Sprintf("https://%s/ap/%s", appHost, username),
+		ID:                fmt.Sprintf("https://%s/ap/%s", host, username),
 		Type:              "Service",
 		Following:         fmt.Sprintf("https://%s/ap/%s/following", host, username),
 		Followers:         fmt.Sprintf("https://%s/ap/%s/followers", host, username),
