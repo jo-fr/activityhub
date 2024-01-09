@@ -11,7 +11,7 @@ const router = createRouter({
       component: ExploreView
     },
     {
-      path: '/feed/:id',
+      path: '/feed/:username',
       name: 'feedDetail',
       component: FeedDetailView,
       props: true

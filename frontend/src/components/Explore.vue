@@ -3,7 +3,7 @@
 
     <AddFeed />
     <h1>Explore existing Feeds:</h1>
-   <FeedItem v-for="item in data" :key="item.name" :name="item.name" :description="item.description" @click="goToDetail(item.id)"/>
+   <FeedItem class="clickable" v-for="item in data" :key="item.name" :name="item.name" :description="item.description" @click="goToDetail(item.account.preferredUsername)"/>
 
   
   </div>
@@ -28,7 +28,10 @@ interface Feed {
   description: string;
   imageURL: string;
   accountID: string;
+  account: {
+    preferredUsername: string;
 }
+} 
 
 export default defineComponent({
     name: 'Explore',
@@ -39,7 +42,7 @@ export default defineComponent({
         onMounted(async () => {
             try {
                 // Make a fetch request using TypeScript
-                const response = await fetch("/api/feed");
+                const response = await fetch("/api/feeds");
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
@@ -56,9 +59,9 @@ export default defineComponent({
     },
 
     methods: {
-    goToDetail(id: string) {
+    goToDetail(username: string) {
       // Navigate to the DetailView with a prop (e.g., id)
-      this.$router.push({ name: 'feedDetail', params: { id: id } });
+      this.$router.push({ name: 'feedDetail', params: { username: username } });
     },
   },
     components: { FeedItem, FeedDetail, AddFeed }
@@ -66,5 +69,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Add your component styles here */
+.clickable {
+  cursor: pointer;
+}
 </style>

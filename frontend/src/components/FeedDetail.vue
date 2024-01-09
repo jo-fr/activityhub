@@ -16,7 +16,7 @@
 
         <div>
           <h2>Feed</h2>
-            <div class="item" v-for="status in data?.status" :key="status.createdAt" v-html="status.Content"></div>
+            <div class="item" v-for="status in data?.status" :key="status.createdAt" v-html="status.content"></div>
         </div>
     
     </div>
@@ -28,6 +28,7 @@
   import type { Ref } from 'vue';
   
   interface Feed {
+    id: string;
     name: string;
     type: string;
     feedURL: string;
@@ -43,7 +44,7 @@
 
   interface Status {
     createdAt: string;
-    Content: string
+    content: string
   }
 
   
@@ -63,7 +64,7 @@
         onMounted(async () => {
             try {
                 // Make a fetch request using TypeScript
-                const response = await fetch(`/api/feed/${route.params.id}`);
+                const response = await fetch(`/api/users/${route.params.username}/feed`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
@@ -77,7 +78,7 @@
             }
             try {
                 // Make a fetch request using TypeScript
-                const response = await fetch(`/api/feed/${route.params.id}/status?limit=10`);
+                const response = await fetch(`/api/feeds/${data.value.feed?.id}/status?limit=10`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
@@ -112,7 +113,7 @@
 
   }
 
-  .links > div {
+  .links >div {
     display: inline;;
   }
 

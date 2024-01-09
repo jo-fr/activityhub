@@ -38,8 +38,7 @@
 
     methods: {
       async submitData() {
-  
-          const response = await fetch("/api/feed", {
+          const response = await fetch("/api/feeds", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -70,21 +69,23 @@
   </script>
 
   
-  <style scoped>
-    .addFeed {
-        width: 100%;
-        padding: 12px 20px;
-        margin: 8px 0;
-        background-color: var(--main-color);
-        color: white;
-        border: 2px solid var(--color-border);
-        border-radius: 4px; 
-        box-sizing: border-box;
-        font-size: 1.5rem;
-    }
+<style scoped>
 
-    .error {
-        color: red;
-    }
-  </style>
+
+  .addFeed {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    background-color: var(--main-color);
+    color: white;
+    border: 2px solid var(--color-border);
+    border-radius: 4px; 
+    box-sizing: border-box;
+    font-size: 1.5rem;
+  }
+
+  .error {
+    color: red;
+  }
+</style>
   
