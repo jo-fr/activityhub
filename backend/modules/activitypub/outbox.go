@@ -93,5 +93,5 @@ func (h *Handler) SendPost(ctx context.Context, sendingActorID string, sendToURI
 }
 
 func (h *Handler) builtAccountURI(username string) string {
-	return fmt.Sprintf("https://%s/users/%s", h.hostURL, username)
+	return fmt.Sprintf("https://%s/ap/%s", h.hostURL, username)
 }

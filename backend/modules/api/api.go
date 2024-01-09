@@ -102,8 +102,8 @@ func (a *API) registerRoutes() {
 	a.Get("/robots.txt", a.ServeRobotstxt())
 	a.Get("/.well-known/webfinger", a.getWebfinger())
 
-	// /users endpoints
-	a.Route("/users", func(r chi.Router) {
+	// activitypub relevant endpoints
+	a.Route("/ap", func(r chi.Router) {
 
 		r.Get("/{actorName}", a.getActor())
 		r.Get("/{actorName}/following", a.FollowingEndpoint())
@@ -117,10 +117,13 @@ func (a *API) registerRoutes() {
 	})
 
 	a.Route("/api", func(r chi.Router) {
-		r.Post("/feed", a.AddNewFeed())
-		r.Get("/feed", a.ListFeeds())
-		r.Get("/feed/{id}", a.GetFeed())
-		r.Get("/feed/{id}/status", a.ListFeedStatus())
+		a.Route("/feeds", func(r chi.Router) {
+			r.Post("/", a.AddNewFeed())
+			r.Get("/", a.ListFeeds())
+			r.Get("/{id}", a.GetFeed())
+			r.Get("/{id}/status", a.ListFeedStatus())
+		})
+
 	})
 
 }

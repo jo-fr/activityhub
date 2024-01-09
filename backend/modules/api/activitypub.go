@@ -94,7 +94,7 @@ func (a *API) FollowingEndpoint() http.HandlerFunc {
 		// always returns empty collection because following is not supported
 		following := externalmodel.OrderedCollection{
 			Context:      "https://www.w3.org/ns/activitystreams",
-			ID:           fmt.Sprintf("https://%s/users/%s/following", a.hostURL, actorName),
+			ID:           fmt.Sprintf("https://%s/ap/%s/following", a.hostURL, actorName),
 			Type:         "OrderedCollection",
 			TotalItems:   0,
 			OrderedItems: []string{},

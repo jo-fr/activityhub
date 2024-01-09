@@ -19,7 +19,7 @@ func TestExternalFollowerCollection(t *testing.T) {
 
 	expectedCollection := externalmodel.OrderedCollection{
 		Context:      "https://www.w3.org/ns/activitystreams",
-		ID:           fmt.Sprintf("https://%s/users/%s/followers", hostURL, username),
+		ID:           fmt.Sprintf("https://%s/ap/%s/followers", hostURL, username),
 		Type:         "OrderedCollection",
 		TotalItems:   len(followers),
 		OrderedItems: []string{"https://example.com/user1", "https://example.com/user2", "https://example.com/user3"},

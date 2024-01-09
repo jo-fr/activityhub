@@ -21,7 +21,7 @@ func ExternalFollowerCollection(hostURL string, username string, followers []mod
 	}
 	return OrderedCollection{
 		Context:      "https://www.w3.org/ns/activitystreams",
-		ID:           fmt.Sprintf("https://%s/users/%s/followers", hostURL, username),
+		ID:           fmt.Sprintf("https://%s/ap/%s/followers", hostURL, username),
 		Type:         "OrderedCollection",
 		TotalItems:   len(followers),
 		OrderedItems: orderedItems,

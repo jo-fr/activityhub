@@ -25,12 +25,12 @@ func ExternalWebfinger(hostURL string, resource string, acc models.Account) Webf
 			{
 				Rel:  "self",
 				Type: "application/activity+json",
-				Href: fmt.Sprintf("https://%s/users/%s", hostURL, acc.PreferredUsername),
+				Href: fmt.Sprintf("https://%s/ap/%s", hostURL, acc.PreferredUsername),
 			},
 			{
 				Rel:  "http://webfinger.net/rel/profile-page",
 				Type: "text/html",
-				Href: fmt.Sprintf("https://%s/users/%s/tese", hostURL, acc.PreferredUsername),
+				Href: fmt.Sprintf("https://%s/ap/%s/tese", hostURL, acc.PreferredUsername),
 			},
 		},
 	}

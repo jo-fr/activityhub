@@ -21,7 +21,7 @@ func TestExternalWebfinger(t *testing.T) {
 			{
 				Rel:  "self",
 				Type: "application/activity+json",
-				Href: fmt.Sprintf("https://%s/users/%s", hostURL, acc.PreferredUsername),
+				Href: fmt.Sprintf("https://%s/ap/%s", hostURL, acc.PreferredUsername),
 			},
 		},
 	}
