@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/pubsub v1.33.0
 	github.com/GoogleCloudPlatform/cloudsql-proxy v1.33.15
 	github.com/go-chi/chi/v5 v5.0.10
+	github.com/go-chi/cors v1.2.1
 	github.com/go-co-op/gocron v1.36.0
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
@@ -29,7 +30,6 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
-	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

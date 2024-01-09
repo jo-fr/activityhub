@@ -1,7 +1,7 @@
 import type { Feed, Status } from '../models/models'
 export async function fetchFeeds() {
   try {
-    const response = await fetch('/api/feeds')
+    const response = await fetch('https://activityhub-djl37eqcna-ey.a.run.app/api/feeds')
     if (!response.ok) {
       throw new Error('Failed to fetch data')
     }
@@ -15,7 +15,7 @@ export async function fetchFeeds() {
 
 export async function addFeed(feedURL: string): Promise<Feed | null> {
   try {
-    const response = await fetch('/api/feeds', {
+    const response = await fetch('https://activityhub-djl37eqcna-ey.a.run.app/api/feeds', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -45,7 +45,9 @@ export async function addFeed(feedURL: string): Promise<Feed | null> {
 
 export async function fetchUserFeed(username: string): Promise<Feed | null> {
   try {
-    const response = await fetch(`/api/users/${username}/feed`)
+    const response = await fetch(
+      `https://activityhub-djl37eqcna-ey.a.run.app/api/users/${username}/feed`
+    )
     if (!response.ok) {
       throw new Error('Failed to fetch user feed data')
     }
@@ -63,7 +65,9 @@ export async function fetchFeedStatus(feedId: string | null): Promise<Status[] |
       throw new Error('Feed ID is missing')
     }
 
-    const response = await fetch(`/api/feeds/${feedId}/status?limit=10`)
+    const response = await fetch(
+      `https://activityhub-djl37eqcna-ey.a.run.app/api/feeds/${feedId}/status?limit=10`
+    )
     if (!response.ok) {
       throw new Error('Failed to fetch feed status data')
     }
