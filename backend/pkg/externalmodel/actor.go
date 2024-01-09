@@ -28,7 +28,7 @@ type PublicKey struct {
 	PublicKeyPem string `json:"publicKeyPem"`
 }
 
-func ExternalActor(hostURL string, appURL string, acc models.Account) Actor {
+func ExternalActor(host string, appHost string, acc models.Account) Actor {
 
 	username := acc.PreferredUsername
 
@@ -37,19 +37,19 @@ func ExternalActor(hostURL string, appURL string, acc models.Account) Actor {
 			"https://www.w3.org/ns/activitystreams",
 			"https://w3id.org/security/v1",
 		},
-		ID:                fmt.Sprintf("https://%s/ap/%s", hostURL, username),
+		ID:                fmt.Sprintf("https://%s/ap/%s", host, username),
 		Type:              "Service",
-		Following:         fmt.Sprintf("https://%s/ap/%s/following", hostURL, username),
-		Followers:         fmt.Sprintf("https://%s/ap/%s/followers", hostURL, username),
+		Following:         fmt.Sprintf("https://%s/ap/%s/following", host, username),
+		Followers:         fmt.Sprintf("https://%s/ap/%s/followers", host, username),
 		PreferredUsername: username,
 		Name:              acc.Name,
 		Summary:           acc.Summary,
-		URL:               fmt.Sprintf("https://%s/feed/%s", appURL, username),
+		URL:               fmt.Sprintf("https://%s/feed/%s", appHost, username),
 		Published:         acc.CreatedAt.Format(time.RFC3339),
-		Inbox:             fmt.Sprintf("https://%s/ap/%s/inbox", hostURL, username),
+		Inbox:             fmt.Sprintf("https://%s/ap/%s/inbox", host, username),
 		PublicKey: PublicKey{
-			ID:           fmt.Sprintf("https://%s/ap/%s#main-key", hostURL, username),
-			Owner:        fmt.Sprintf("https://%s/ap/%s", hostURL, username),
+			ID:           fmt.Sprintf("https://%s/ap/%s#main-key", host, username),
+			Owner:        fmt.Sprintf("https://%s/ap/%s", host, username),
 			PublicKeyPem: string(acc.PublicKey),
 		},
 	}

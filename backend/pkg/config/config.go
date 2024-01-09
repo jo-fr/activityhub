@@ -26,8 +26,8 @@ func (e environment) IsLocal() bool {
 type Config struct {
 	Port        string      `envconfig:"PORT" required:"true"`
 	Environment environment `envconfig:"ENVIRONMENT" required:"true"`
-	HostURL     string      `envconfig:"HOST_URL" required:"true"`
-	AppURL      string      `envconfig:"APP_URL" required:"true"`
+	Host        string      `envconfig:"HOST" required:"true"`
+	AppHost     string      `envconfig:"APP_HOST" required:"true"`
 	Database    struct {
 		Host     string `envconfig:"DB_HOST" required:"true"`
 		Port     string `envconfig:"DB_PORT" required:"true"`

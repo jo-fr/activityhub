@@ -14,12 +14,12 @@ type Account struct {
 	URI       string `json:"uri"`
 }
 
-func ExternalAccount(acc models.Account, hostURL string) Account {
+func ExternalAccount(acc models.Account, host string) Account {
 	return Account{
 		CreatedAt: acc.CreatedAt.String(),
 		ID:        acc.ID,
 		Username:  acc.PreferredUsername,
 		Name:      acc.Name,
-		URI:       fmt.Sprintf("%s@%s", acc.PreferredUsername, hostURL),
+		URI:       fmt.Sprintf("%s@%s", acc.PreferredUsername, host),
 	}
 }

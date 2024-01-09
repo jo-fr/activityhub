@@ -31,7 +31,7 @@ func (a *API) AddNewFeed() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalFeed(feed, a.hostURL), http.StatusCreated, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalFeed(feed, a.host), http.StatusCreated, w, a.log)
 	}
 }
 
@@ -56,7 +56,7 @@ func (a *API) ListFeeds() http.HandlerFunc {
 
 		var extFeeds []externalmodel.Feed
 		for _, feed := range sources {
-			extFeeds = append(extFeeds, externalmodel.ExternalFeed(feed, a.hostURL))
+			extFeeds = append(extFeeds, externalmodel.ExternalFeed(feed, a.host))
 		}
 
 		resp := externalmodel.ListSourcesFeedResponse{
@@ -83,7 +83,7 @@ func (a *API) GetFeed() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalFeed(feed, a.hostURL), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalFeed(feed, a.host), http.StatusOK, w, a.log)
 	}
 }
 
@@ -98,7 +98,7 @@ func (a *API) GetFeedWithUsername() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalFeed(feed, a.hostURL), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalFeed(feed, a.host), http.StatusOK, w, a.log)
 	}
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 func TestExternalFollowerCollection(t *testing.T) {
-	hostURL := "example.com"
+	host := "example.com"
 	username := "john"
 	followers := []models.Follower{
 		{AccountURIFollowing: "https://example.com/user1"},
@@ -19,13 +19,13 @@ func TestExternalFollowerCollection(t *testing.T) {
 
 	expectedCollection := externalmodel.OrderedCollection{
 		Context:      "https://www.w3.org/ns/activitystreams",
-		ID:           fmt.Sprintf("https://%s/ap/%s/followers", hostURL, username),
+		ID:           fmt.Sprintf("https://%s/ap/%s/followers", host, username),
 		Type:         "OrderedCollection",
 		TotalItems:   len(followers),
 		OrderedItems: []string{"https://example.com/user1", "https://example.com/user2", "https://example.com/user3"},
 	}
 
-	result := externalmodel.ExternalFollowerCollection(hostURL, username, followers)
+	result := externalmodel.ExternalFollowerCollection(host, username, followers)
 
 	if result.Context != expectedCollection.Context {
 		t.Errorf("Expected Context %s, got %s", expectedCollection.Context, result.Context)

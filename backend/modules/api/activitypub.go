@@ -25,7 +25,7 @@ func (a *API) getWebfinger() http.HandlerFunc {
 
 		resource := r.URL.Query().Get("resource")
 
-		username, err := validateAndExtractUsername(a.hostURL, resource)
+		username, err := validateAndExtractUsername(a.host, resource)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
@@ -37,7 +37,7 @@ func (a *API) getWebfinger() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalWebfinger(a.hostURL, resource, actor), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalWebfinger(a.host, resource, actor), http.StatusOK, w, a.log)
 	}
 }
 
@@ -52,7 +52,7 @@ func (a *API) getActor() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalActor(a.hostURL, a.appURL, actor), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalActor(a.host, a.appHost, actor), http.StatusOK, w, a.log)
 	}
 
 }
@@ -94,7 +94,7 @@ func (a *API) FollowingEndpoint() http.HandlerFunc {
 		// always returns empty collection because following is not supported
 		following := externalmodel.OrderedCollection{
 			Context:      "https://www.w3.org/ns/activitystreams",
-			ID:           fmt.Sprintf("https://%s/ap/%s/following", a.hostURL, actorName),
+			ID:           fmt.Sprintf("https://%s/ap/%s/following", a.host, actorName),
 			Type:         "OrderedCollection",
 			TotalItems:   0,
 			OrderedItems: []string{},
@@ -114,12 +114,12 @@ func (a *API) FollowersEndpoint() http.HandlerFunc {
 			return
 		}
 
-		collection := externalmodel.ExternalFollowerCollection(a.hostURL, actorName, followers)
+		collection := externalmodel.ExternalFollowerCollection(a.host, actorName, followers)
 		render.Success(r.Context(), collection, http.StatusOK, w, a.log)
 	}
 }
 
-func validateAndExtractUsername(hostURL string, resource string) (string, error) {
+func validateAndExtractUsername(host string, resource string) (string, error) {
 	if !strings.Contains(resource, "acct:") {
 		return "", ErrWrongFormat
 	}
@@ -128,7 +128,7 @@ func validateAndExtractUsername(hostURL string, resource string) (string, error)
 	username := strings.Split(actor, "@")[0]
 	uri := strings.Split(actor, "@")[1]
 
-	if uri != hostURL {
+	if uri != host {
 		return "", ErrWrongURI
 	}
 

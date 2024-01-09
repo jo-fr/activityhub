@@ -15,14 +15,14 @@ var Module = fx.Options(
 )
 
 type Handler struct {
-	hostURL string
-	store   *store.Store[repository.ActivityHubRepository]
+	host  string
+	store *store.Store[repository.ActivityHubRepository]
 }
 
 func ProvideHandler(config config.Config, store *store.Store[repository.ActivityHubRepository]) *Handler {
 
 	return &Handler{
-		hostURL: config.HostURL,
-		store:   store,
+		host:  config.Host,
+		store: store,
 	}
 }

@@ -24,10 +24,10 @@ func parsePrivateKey(privateKeyPem []byte) (*rsa.PrivateKey, error) {
 	return privKey, nil
 }
 
-func createSignatureString(bodyDigest string, method string, target string, hostURL string, date time.Time) string {
+func createSignatureString(bodyDigest string, method string, target string, host string, date time.Time) string {
 	var signatureStrings []string
 	signatureStrings = append(signatureStrings, fmt.Sprintf("(request-target): %s %s", strings.ToLower(method), target))
-	signatureStrings = append(signatureStrings, fmt.Sprintf("host: %s", hostURL))
+	signatureStrings = append(signatureStrings, fmt.Sprintf("host: %s", host))
 	signatureStrings = append(signatureStrings, fmt.Sprintf("date: %s", date.Format(http.TimeFormat)))
 	signatureStrings = append(signatureStrings, fmt.Sprintf("digest: %s", bodyDigest))
 	signatureStrings = append(signatureStrings, fmt.Sprintf("content-type: %s", defaultContentType))

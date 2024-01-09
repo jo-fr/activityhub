@@ -24,14 +24,14 @@ type Feed struct {
 	Name        string         `json:"name"`
 	Type        model.FeedType `json:"type"`
 	FeedURL     string         `json:"feedURL"`
-	HostURL     string         `json:"hostURL"`
+	HostURL     string         `json:"host"`
 	Author      string         `json:"author"`
 	Description string         `json:"description"`
 	ImageURL    string         `json:"imageURL"`
 	Account     Account        `json:"account"`
 }
 
-func ExternalFeed(feed model.Feed, hostURL string) Feed {
+func ExternalFeed(feed model.Feed, host string) Feed {
 	return Feed{
 		CreatedAt:   feed.CreatedAt.String(),
 		ID:          feed.ID,
@@ -42,7 +42,7 @@ func ExternalFeed(feed model.Feed, hostURL string) Feed {
 		Author:      feed.Author,
 		Description: feed.Description,
 		ImageURL:    feed.ImageURL,
-		Account:     ExternalAccount(feed.Account, hostURL),
+		Account:     ExternalAccount(feed.Account, host),
 	}
 
 }

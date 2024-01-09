@@ -14,14 +14,14 @@ type OrderedCollection struct {
 	OrderedItems []string `json:"orderedItems"`
 }
 
-func ExternalFollowerCollection(hostURL string, username string, followers []models.Follower) OrderedCollection {
+func ExternalFollowerCollection(host string, username string, followers []models.Follower) OrderedCollection {
 	var orderedItems []string
 	for _, follower := range followers {
 		orderedItems = append(orderedItems, follower.AccountURIFollowing)
 	}
 	return OrderedCollection{
 		Context:      "https://www.w3.org/ns/activitystreams",
-		ID:           fmt.Sprintf("https://%s/ap/%s/followers", hostURL, username),
+		ID:           fmt.Sprintf("https://%s/ap/%s/followers", host, username),
 		Type:         "OrderedCollection",
 		TotalItems:   len(followers),
 		OrderedItems: orderedItems,
