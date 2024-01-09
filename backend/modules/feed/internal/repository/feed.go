@@ -27,6 +27,14 @@ func (e *FeedRepository) GetFeedWithID(id string) (model.Feed, error) {
 	return source, nil
 }
 
+func (e *FeedRepository) GetFeedWithAccountID(accountID string) (model.Feed, error) {
+	var feed model.Feed
+	if err := e.GetTX().Preload("Account").First(&feed, "account_id = ?", accountID).Error; err != nil {
+		return model.Feed{}, err
+	}
+	return feed, nil
+}
+
 func (e *FeedRepository) FeedCount() (int64, error) {
 	var count int64
 	if err := e.GetTX().Model(&model.Feed{}).Count(&count).Error; err != nil {

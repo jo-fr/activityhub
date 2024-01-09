@@ -21,7 +21,7 @@ type Feed struct {
 	Description string         `json:"description"`
 	ImageURL    string         `json:"imageURL"`
 	AccountID   string         `json:"accountID"`
-	Account     models.Account `json:"account" gorm:"foreignKey:AccountID"`
+	Account     models.Account `json:"account,omitempty" gorm:"foreignKey:AccountID"`
 }
 
 func (*Feed) TableName() string {

@@ -82,6 +82,21 @@ func (a *API) GetFeed() http.HandlerFunc {
 	}
 }
 
+func (a *API) GetFeedWithUsername() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		username := chi.URLParam(r, "username")
+
+		feed, err := a.feed.GetFeedWithUsername(r.Context(), username)
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		render.Success(r.Context(), feed, http.StatusOK, w, a.log)
+	}
+}
+
 func (a *API) ListFeedStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

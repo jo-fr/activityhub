@@ -202,6 +202,31 @@ func (h *Handler) GetFeed(ctx context.Context, id string) (feed model.Feed, err 
 	return feed, err
 }
 
+func (h *Handler) GetFeedWithUsername(ctx context.Context, username string) (feed model.Feed, err error) {
+	err = h.store.Execute(ctx, func(e *repository.FeedRepository) error {
+
+		ctx = e.GetCtxWithTx(ctx)
+		account, err := h.activitypub.GetActor(ctx, username)
+		if err != nil {
+			if errors.Is(err, activitypub.ErrActorNotFound) {
+				return err
+			}
+			return errors.Wrap(err, "failed to get actor")
+		}
+
+		feed, err = e.GetFeedWithAccountID(account.ID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrFeedNotFound
+			}
+			return errors.Wrap(err, "failed to get feed")
+		}
+		return nil
+	})
+
+	return feed, err
+}
+
 func (h *Handler) ListFeedStatus(ctx context.Context, id string, offset int, limit int) (totalCount int, statuses []model.Status, err error) {
 	err = h.store.Execute(ctx, func(e *repository.FeedRepository) error {
 		feed, err := e.GetFeedWithID(id)

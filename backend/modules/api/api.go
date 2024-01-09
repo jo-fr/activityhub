@@ -104,7 +104,6 @@ func (a *API) registerRoutes() {
 
 	// activitypub relevant endpoints
 	a.Route("/ap", func(r chi.Router) {
-
 		r.Get("/{actorName}", a.getActor())
 		r.Get("/{actorName}/following", a.FollowingEndpoint())
 		r.Get("/{actorName}/followers", a.FollowersEndpoint())
@@ -117,12 +116,14 @@ func (a *API) registerRoutes() {
 	})
 
 	a.Route("/api", func(r chi.Router) {
-		a.Route("/feeds", func(r chi.Router) {
+		r.Route("/feeds", func(r chi.Router) {
 			r.Post("/", a.AddNewFeed())
 			r.Get("/", a.ListFeeds())
 			r.Get("/{id}", a.GetFeed())
 			r.Get("/{id}/status", a.ListFeedStatus())
 		})
+
+		r.Get("/users/{username}/feed", a.GetFeedWithUsername())
 
 	})
 
