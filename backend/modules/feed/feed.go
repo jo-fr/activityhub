@@ -32,6 +32,7 @@ var Module = fx.Options(
 // define errors
 var (
 	ErrFeedAlreadyExists = errutil.NewError(errutil.TypeAlreadyExists, "feed already exists")
+	ErrFeedNotFound      = errutil.NewError(errutil.TypeNotFound, "feed not found")
 )
 
 type Handler struct {
@@ -170,7 +171,7 @@ func (h *Handler) ListFeeds(ctx context.Context, offset int, limit int) (totalCo
 	var sources []model.Feed
 	err = h.store.Execute(ctx, func(e *repository.FeedRepository) error {
 
-		count, err := e.CountFeeds()
+		count, err := e.FeedCount()
 		if err != nil {
 			return errors.Wrap(err, "failed to count feeds")
 		}
@@ -191,15 +192,40 @@ func (h *Handler) GetFeed(ctx context.Context, id string) (feed model.Feed, err 
 		feed, err = e.GetFeedWithID(id)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errutil.NewError(errutil.TypeNotFound, "feed not found")
+				return ErrFeedNotFound
 			}
-
 			return errors.Wrap(err, "failed to get feed")
 		}
 		return nil
 	})
 
 	return feed, err
+}
+
+func (h *Handler) ListFeedStatus(ctx context.Context, id string, offset int, limit int) (totalCount int, statuses []model.Status, err error) {
+	err = h.store.Execute(ctx, func(e *repository.FeedRepository) error {
+		feed, err := e.GetFeedWithID(id)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrFeedNotFound
+			}
+			return errors.Wrap(err, "failed to get feed")
+		}
+
+		count, err := e.StatusCount(feed.AccountID)
+		if err != nil {
+			return errors.Wrap(err, "failed to count statuses")
+		}
+		totalCount = int(count)
+
+		statuses, err = e.ListStatusFromAccount(feed.AccountID, offset, limit)
+		if err != nil {
+			return errors.Wrap(err, "failed to get statuses")
+		}
+		return nil
+	})
+
+	return totalCount, statuses, err
 }
 
 func builtPost(title string, description string, link string) string {

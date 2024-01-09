@@ -10,3 +10,8 @@ type ListSourcesFeedResponse struct {
 	Total int          `json:"total"`
 	Items []model.Feed `json:"items"`
 }
+
+type ListFeedStatusResponse struct {
+	Total int            `json:"total"`
+	Items []model.Status `json:"items"`
+}

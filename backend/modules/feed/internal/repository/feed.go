@@ -27,7 +27,7 @@ func (e *FeedRepository) GetFeedWithID(id string) (model.Feed, error) {
 	return source, nil
 }
 
-func (e *FeedRepository) CountFeeds() (int64, error) {
+func (e *FeedRepository) FeedCount() (int64, error) {
 	var count int64
 	if err := e.GetTX().Model(&model.Feed{}).Count(&count).Error; err != nil {
 		return 0, err
@@ -35,18 +35,41 @@ func (e *FeedRepository) CountFeeds() (int64, error) {
 	return count, nil
 }
 
+func (e *FeedRepository) StatusCount(accountID string) (int64, error) {
+	var count int64
+	if err := e.GetTX().Where("account_id = ?", accountID).Model(&model.Status{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (e *FeedRepository) ListFeeds(offset int, limit int) ([]model.Feed, error) {
-	var sources []model.Feed
+	var feeds []model.Feed
 	err := e.GetTX().
 		Preload("Account").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
-		Find(&sources).
+		Find(&feeds).
 		Error
 
 	if err != nil {
 		return nil, err
 	}
-	return sources, nil
+	return feeds, nil
+}
+
+func (e *FeedRepository) ListStatusFromAccount(accountID string, offset int, limit int) ([]model.Status, error) {
+	var status []model.Status
+	err := e.GetTX().
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&status, "account_id = ?", accountID).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+	return status, nil
 }

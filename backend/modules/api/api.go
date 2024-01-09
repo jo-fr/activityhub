@@ -120,6 +120,7 @@ func (a *API) registerRoutes() {
 		r.Post("/feed", a.AddNewFeed())
 		r.Get("/feed", a.ListFeeds())
 		r.Get("/feed/{id}", a.GetFeed())
+		r.Get("/feed/{id}/status", a.ListFeedStatus())
 	})
 
 }

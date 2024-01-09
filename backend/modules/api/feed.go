@@ -81,3 +81,37 @@ func (a *API) GetFeed() http.HandlerFunc {
 		render.Success(r.Context(), source, http.StatusOK, w, a.log)
 	}
 }
+
+func (a *API) ListFeedStatus() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+		if err := validate.Validator().Var(id, "required,uuid4"); err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		offset, err := strconv.ParseInt(r.FormValue("offset"), 10, 32)
+		if err != nil || offset == 0 {
+			offset = offsetDefault
+		}
+
+		limit, err := strconv.ParseInt(r.FormValue("limit"), 10, 32)
+		if err != nil || limit == 0 {
+			limit = limitDefault
+		}
+
+		totalCount, status, err := a.feed.ListFeedStatus(r.Context(), id, int(offset), int(limit))
+		if err != nil {
+			render.Error(r.Context(), err, w, a.log)
+			return
+		}
+
+		resp := externalmodel.ListFeedStatusResponse{
+			Total: totalCount,
+			Items: status,
+		}
+
+		render.Success(r.Context(), resp, http.StatusOK, w, a.log)
+	}
+}
