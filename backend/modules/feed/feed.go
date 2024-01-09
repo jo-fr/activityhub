@@ -114,6 +114,12 @@ func (h *Handler) AddNewFeed(ctx context.Context, feedurl string) (feed model.Fe
 			return errors.Wrap(err, "failed to create feed")
 		}
 
+		// fetch feed again to get full model
+		feed, err = e.GetFeedWithID(feed.ID)
+		if err != nil {
+			return errors.Wrap(err, "failed to create feed")
+		}
+
 		if err := scheduleNewJob(ctx, h.scheduler, h.log, feed.Name, h.FetchFeed(context.Background(), feed)); err != nil {
 			return errors.Wrap(err, "failed to schedule new job")
 		}
