@@ -52,7 +52,7 @@ func (a *API) getActor() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalActor(a.hostURL, actor), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalActor(a.hostURL, a.appURL, actor), http.StatusOK, w, a.log)
 	}
 
 }

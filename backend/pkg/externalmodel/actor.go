@@ -28,7 +28,7 @@ type PublicKey struct {
 	PublicKeyPem string `json:"publicKeyPem"`
 }
 
-func ExternalActor(hostURL string, acc models.Account) Actor {
+func ExternalActor(hostURL string, appURL string, acc models.Account) Actor {
 
 	username := acc.PreferredUsername
 
@@ -44,7 +44,7 @@ func ExternalActor(hostURL string, acc models.Account) Actor {
 		PreferredUsername: username,
 		Name:              acc.Name,
 		Summary:           acc.Summary,
-		URL:               fmt.Sprintf("https://%s/ap/%s/hallotest", hostURL, username),
+		URL:               fmt.Sprintf("https://%s/feed/%s", appURL, username),
 		Published:         acc.CreatedAt.Format(time.RFC3339),
 		Inbox:             fmt.Sprintf("https://%s/ap/%s/inbox", hostURL, username),
 		PublicKey: PublicKey{

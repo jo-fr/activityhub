@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 
 	"github.com/jo-fr/activityhub/backend/modules/activitypub"
 	"github.com/jo-fr/activityhub/backend/modules/api/internal/middleware"
@@ -25,14 +24,6 @@ const (
 	limitDefault  = 100
 )
 
-var corsHandler = cors.Handler(cors.Options{
-	AllowedOrigins:   []string{"https://activityhub-408810.web.app"},
-	AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-	AllowedHeaders:   []string{"*"},
-	AllowCredentials: true,
-	MaxAge:           300, // Maximum value not ignored by any of major browsers
-})
-
 var Module = fx.Options(
 	fx.Invoke(ProvideAPI),
 )
@@ -41,6 +32,7 @@ type API struct {
 	*chi.Mux
 	log     *log.Logger
 	hostURL string
+	appURL  string
 
 	pubsub      *pubsub.Client
 	activitypub *activitypub.Handler
@@ -53,12 +45,13 @@ func ProvideAPI(lc fx.Lifecycle, config config.Config, logger *log.Logger, pubsu
 		Mux:         chi.NewRouter(),
 		log:         logger,
 		hostURL:     config.HostURL,
+		appURL:      config.AppURL,
 		pubsub:      pubsub,
 		activitypub: activitypub,
 		feed:        feed,
 	}
 
-	api.registerMiddlewares(logger)
+	api.registerMiddlewares(logger, config)
 	api.registerRoutes()
 
 	registerHooks(lc, api, logger, config.Port)
@@ -92,11 +85,11 @@ func registerHooks(lc fx.Lifecycle, api *API, logger *log.Logger, port string) {
 	)
 }
 
-func (a *API) registerMiddlewares(l *log.Logger) {
+func (a *API) registerMiddlewares(l *log.Logger, config config.Config) {
 	a.Use(chiMiddleware.RequestID)
 	a.Use(middleware.Logger(l))
 	a.Use(chiMiddleware.Recoverer)
-	a.Use(corsHandler)
+	a.Use(middleware.CORSHandler(config.AppURL))
 
 	// add default header
 	a.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))

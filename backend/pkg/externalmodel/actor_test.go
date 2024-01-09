@@ -13,6 +13,7 @@ import (
 
 func TestExternalActor(t *testing.T) {
 	hostURL := "example.com"
+	appURL := "https://app.example.com"
 	acc := models.Account{
 		BaseModel: sharedmodel.BaseModel{
 			ID:        "e8f25aca-b808-45c9-bbe6-08989844ff8e",
@@ -45,7 +46,7 @@ func TestExternalActor(t *testing.T) {
 		},
 	}
 
-	result := externalmodel.ExternalActor(hostURL, acc)
+	result := externalmodel.ExternalActor(hostURL, appURL, acc)
 
 	if !reflect.DeepEqual(result, expectedActor) {
 		t.Errorf("Expected %+v, got %+v", expectedActor, result)
