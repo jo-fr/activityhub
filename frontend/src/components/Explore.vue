@@ -1,7 +1,8 @@
 <template>
   <div>
     <h1>Explore existing Feeds:</h1>
-   <FeedItem v-for="item in data" :key="item.name" :name="item.name" :description="item.description" />
+   <FeedItem v-for="item in data" :key="item.name" :name="item.name" :description="item.description" @click="goToDetail(item.id)"/>
+
   
   </div>
 </template>
@@ -10,9 +11,12 @@
 import { defineComponent, ref, onMounted  } from 'vue';
 import type { Ref } from 'vue';
 import FeedItem from './FeedItem.vue'
+import FeedDetail from './FeedDetail.vue'
+
 
 
 interface Feed {
+  id: string;
   name: string;
   type: string;
   feedURL: string;
@@ -47,7 +51,15 @@ export default defineComponent({
         });
         return { data };
     },
-    components: { FeedItem }
+
+    methods: {
+    goToDetail(id: string) {
+      // Navigate to the DetailView with a prop (e.g., id)
+      console.log(id)
+      this.$router.push({ name: 'feedDetail', params: { id: id } });
+    },
+  },
+    components: { FeedItem, FeedDetail }
 });
 </script>
 
