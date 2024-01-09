@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/jo-fr/activityhub/backend/pkg/log"
+	"github.com/pkg/errors"
 
 	"cloud.google.com/go/pubsub"
 
@@ -57,6 +58,11 @@ func (c *Consumer) consumeInbox() func(ctx context.Context, msg *pubsub.Message)
 
 		err := c.handler.ReceiveInboxActivity(ctx, activity)
 		if err != nil {
+			if errors.Is(err, ErrUnsupportedActivityType) {
+				c.log.Errorf("unsupported activity type: %s. Ack message", activity.Type)
+				msg.Ack()
+				return
+			}
 			c.log.Errorf("error while receiving inbox activity: %s", err.Error())
 			msg.Nack()
 			return
