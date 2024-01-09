@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 
 	"github.com/jo-fr/activityhub/backend/modules/activitypub"
 	"github.com/jo-fr/activityhub/backend/modules/api/internal/middleware"
@@ -23,6 +24,13 @@ const (
 	offsetDefault = 0
 	limitDefault  = 100
 )
+
+var coreHandler = cors.New(cors.Options{
+	AllowedOrigins:   []string{"https://activityhub-408810.web.app/"},
+	AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+	AllowedHeaders:   []string{"Content-Type"},
+	AllowCredentials: true,
+}).Handler
 
 var Module = fx.Options(
 	fx.Invoke(ProvideAPI),
@@ -87,6 +95,7 @@ func (a *API) registerMiddlewares(l *log.Logger) {
 	a.Use(chiMiddleware.RequestID)
 	a.Use(middleware.Logger(l))
 	a.Use(chiMiddleware.Recoverer)
+	a.Use(coreHandler)
 
 	// add default header
 	a.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
