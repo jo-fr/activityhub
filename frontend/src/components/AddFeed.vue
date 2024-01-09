@@ -1,8 +1,7 @@
 <template>
     <div>
-    <input type="text"  v-model="feedURL" placeholder="add new Feed URL"/>
-    <button @click="submitData">Submit</button>
-    <p v-if="errorMessage">{{errorMessage}}</p>
+    <input class="addFeed" type="text"  v-model="feedURL" v-on:keyup.enter="submitData" placeholder="add new Feed URL"/>
+    <p class="error" v-if="errorMessage">{{errorMessage}}</p>
     </div>
   </template>
   
@@ -72,27 +71,20 @@
 
   
   <style scoped>
-  .item {
-    border: 1px solid var( --color-border);
-    border-radius: 4px;
-    padding: 10px;
-    margin: 10px 0;
-  }
+    .addFeed {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        background-color: var(--main-color);
+        color: white;
+        border: 2px solid var(--color-border);
+        border-radius: 4px; 
+        box-sizing: border-box;
+        font-size: 1.5rem;
+    }
 
-  .links {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-
-  }
-
-  .links > div {
-    display: inline;;
-  }
-
-  strong {
-    color: forestgreen;
-    font-weight: 800;
-  }
+    .error {
+        color: red;
+    }
   </style>
   
