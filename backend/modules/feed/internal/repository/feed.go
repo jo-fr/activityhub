@@ -13,7 +13,7 @@ func (e *FeedRepository) CreateFeed(source model.Feed) (model.Feed, error) {
 
 func (e *FeedRepository) GetFeedWithFeedURL(feedURL string) (model.Feed, error) {
 	var source model.Feed
-	if err := e.GetTX().First(&source, "feed_url = ?", feedURL).Error; err != nil {
+	if err := e.GetTX().Preload("Account").First(&source, "feed_url = ?", feedURL).Error; err != nil {
 		return model.Feed{}, err
 	}
 	return source, nil
@@ -21,7 +21,7 @@ func (e *FeedRepository) GetFeedWithFeedURL(feedURL string) (model.Feed, error) 
 
 func (e *FeedRepository) GetFeedWithID(id string) (model.Feed, error) {
 	var source model.Feed
-	if err := e.GetTX().First(&source, "id = ?", id).Error; err != nil {
+	if err := e.GetTX().Preload("Account").First(&source, "id = ?", id).Error; err != nil {
 		return model.Feed{}, err
 	}
 	return source, nil
@@ -38,6 +38,7 @@ func (e *FeedRepository) CountFeeds() (int64, error) {
 func (e *FeedRepository) ListFeeds(offset int, limit int) ([]model.Feed, error) {
 	var sources []model.Feed
 	err := e.GetTX().
+		Preload("Account").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
