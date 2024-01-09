@@ -25,12 +25,13 @@ const (
 	limitDefault  = 100
 )
 
-var coreHandler = cors.New(cors.Options{
-	AllowedOrigins:   []string{"https://activityhub-408810.web.app/"},
+var corsHandler = cors.Handler(cors.Options{
+	AllowedOrigins:   []string{"https://activityhub-408810.web.app"},
 	AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-	AllowedHeaders:   []string{"Content-Type"},
+	AllowedHeaders:   []string{"*"},
 	AllowCredentials: true,
-}).Handler
+	MaxAge:           300, // Maximum value not ignored by any of major browsers
+})
 
 var Module = fx.Options(
 	fx.Invoke(ProvideAPI),
@@ -95,7 +96,7 @@ func (a *API) registerMiddlewares(l *log.Logger) {
 	a.Use(chiMiddleware.RequestID)
 	a.Use(middleware.Logger(l))
 	a.Use(chiMiddleware.Recoverer)
-	a.Use(coreHandler)
+	a.Use(corsHandler)
 
 	// add default header
 	a.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
