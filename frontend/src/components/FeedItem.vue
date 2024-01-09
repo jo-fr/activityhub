@@ -6,17 +6,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted  } from 'vue';
+import { defineComponent } from 'vue'
 export default defineComponent({
   name: 'FeedItem',
   props: {
     name: String,
-   description: String,
-  },
- 
+    description: String
+  }
 })
 </script>
-
 
 <style scoped>
 .item {
@@ -24,8 +22,7 @@ export default defineComponent({
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
-  background-color:var(--color-background);
-
+  background-color: var(--color-background);
 }
 
 h2 {
@@ -35,6 +32,4 @@ h2 {
 p {
   margin: 0;
 }
-
-
 </style>

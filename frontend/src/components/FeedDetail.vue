@@ -1,125 +1,121 @@
 <template>
-    <div>
-      <h1>{{data?.feed?.name}}</h1>
-      <div clas="links">
-        <div>
-          {{ data?.feed?.account.uri }}
-        </div>
-        <div>
-         <a target=”_blank” :href="data?.feed?.feedURL">Feed URL</a>
-        </div>
-        <div>
-         <a target=”_blank” :href="data?.feed?.hostURL">Host Website</a>
-        </div>
+  <div>
+    <h1>{{ data?.feed?.name }}</h1>
+    <div clas="links">
+      <div>
+        {{ data?.feed?.account.uri }}
       </div>
-      <p>{{data?.feed?.description}}</p>
-
-        <div>
-          <h2>Feed</h2>
-            <div class="item" v-for="status in data?.status" :key="status.createdAt" v-html="status.content"></div>
-        </div>
-    
+      <div>
+        <a target="”_blank”" :href="data?.feed?.feedURL">Feed URL</a>
+      </div>
+      <div>
+        <a target="”_blank”" :href="data?.feed?.hostURL">Host Website</a>
+      </div>
     </div>
-  </template>
-  
-  <script lang="ts">
-  import { defineComponent, ref, onMounted, defineProps  } from 'vue';
-  import { stringifyQuery, useRoute } from 'vue-router'; 
-  import type { Ref } from 'vue';
-  
-  interface Feed {
-    id: string;
-    name: string;
-    type: string;
-    feedURL: string;
-    hostURL: string;
-    author: string;
-    description: string;
-    imageURL: string;
-    accountID: string;
-    account: {
-      uri: string;
-  };
+    <p>{{ data?.feed?.description }}</p>
+
+    <div>
+      <h2>Feed</h2>
+      <div
+        class="item"
+        v-for="status in data?.status"
+        :key="status.createdAt"
+        v-html="status.content"
+      ></div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref, onMounted, defineProps } from 'vue'
+import { useRoute } from 'vue-router'
+import type { Ref } from 'vue'
+
+interface Feed {
+  id: string
+  name: string
+  type: string
+  feedURL: string
+  hostURL: string
+  author: string
+  description: string
+  imageURL: string
+  accountID: string
+  account: {
+    uri: string
   }
+}
 
-  interface Status {
-    createdAt: string;
-    content: string
-  }
+interface Status {
+  createdAt: string
+  content: string
+}
 
-  
-  export default defineComponent({
-    name: 'FeedDetail',
+export default defineComponent({
+  name: 'FeedDetail',
 
-
-    setup() {
-      const data: Ref<{ feed: Feed | null; status: Status[] | null }> = ref({
+  setup() {
+    const data: Ref<{ feed: Feed | null; status: Status[] | null }> = ref({
       feed: null,
-      status: null,
-    });
-        const route = useRoute();
+      status: null
+    })
+    const route = useRoute()
 
-
-        // Fetch data from the API when the component is mounted
-        onMounted(async () => {
-            try {
-                // Make a fetch request using TypeScript
-                const response = await fetch(`/api/users/${route.params.username}/feed`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                // Parse the JSON response
-                const jsonData = await response.json();
-                // Update the data property with the fetched data
-                data.value.feed = jsonData;
-            }
-            catch (error) {
-                console.error('Error fetching data:', error);
-            }
-            try {
-                // Make a fetch request using TypeScript
-                const response = await fetch(`/api/feeds/${data.value.feed?.id}/status?limit=10`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                // Parse the JSON response
-                const jsonData = await response.json();
-                // Update the data property with the fetched data
-                console.log(jsonData)
-                data.value.status = jsonData.items;
-            }
-            catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        });
-        return { data };
-    },
-  });
-  </script>
-
-  
-  <style scoped>
-  .item {
-    border: 1px solid var( --color-border);
-    border-radius: 4px;
-    padding: 10px;
-    margin: 10px 0;
+    // Fetch data from the API when the component is mounted
+    onMounted(async () => {
+      try {
+        // Make a fetch request using TypeScript
+        const response = await fetch(`/api/users/${route.params.username}/feed`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch data')
+        }
+        // Parse the JSON response
+        const jsonData = await response.json()
+        // Update the data property with the fetched data
+        data.value.feed = jsonData
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+      try {
+        // Make a fetch request using TypeScript
+        const response = await fetch(`/api/feeds/${data.value.feed?.id}/status?limit=10`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch data')
+        }
+        // Parse the JSON response
+        const jsonData = await response.json()
+        // Update the data property with the fetched data
+        console.log(jsonData)
+        data.value.status = jsonData.items
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+    })
+    return { data }
   }
+})
+</script>
 
-  .links {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+<style scoped>
+.item {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 10px;
+  margin: 10px 0;
+}
 
-  }
+.links {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 
-  .links >div {
-    display: inline;;
-  }
+.links > div {
+  display: inline;
+}
 
-  strong {
-    color: forestgreen;
-    font-weight: 800;
-  }
-  </style>
-  
+strong {
+  color: forestgreen;
+  font-weight: 800;
+}
+</style>

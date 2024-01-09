@@ -4,9 +4,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <header>
-
-    <h1><RouterLink to="/">ActivityHub</RouterLink></h1> 
-
+    <h1><RouterLink to="/">ActivityHub</RouterLink></h1>
   </header>
   <RouterView />
 </template>
@@ -17,13 +15,10 @@ header {
   max-height: 100vh;
 }
 
-
 h1 {
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
   text-align: center;
 }
-
-
 </style>
