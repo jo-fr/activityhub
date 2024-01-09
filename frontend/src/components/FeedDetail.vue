@@ -3,7 +3,7 @@
       <h1>{{data?.feed?.name}}</h1>
       <div clas="links">
         <div>
-          {{ data?.feed?.account.preferredUsername }}
+          {{ data?.feed?.account.uri }}
         </div>
         <div>
          <a target=”_blank” :href="data?.feed?.feedURL">Feed URL</a>
@@ -38,7 +38,7 @@
     imageURL: string;
     accountID: string;
     account: {
-      preferredUsername: string;
+      uri: string;
   };
   }
 

@@ -3,7 +3,7 @@
 
     <AddFeed />
     <h1>Explore existing Feeds:</h1>
-   <FeedItem class="clickable" v-for="item in data" :key="item.name" :name="item.name" :description="item.description" @click="goToDetail(item.account.preferredUsername)"/>
+   <FeedItem class="clickable" v-for="item in data" :key="item.name" :name="item.name" :description="item.description" @click="goToDetail(item.account.username)"/>
 
   
   </div>
@@ -29,7 +29,7 @@ interface Feed {
   imageURL: string;
   accountID: string;
   account: {
-    preferredUsername: string;
+    username: string;
 }
 } 
 
