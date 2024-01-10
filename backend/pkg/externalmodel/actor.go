@@ -44,7 +44,7 @@ func ExternalActor(host string, appHost string, acc models.Account) Actor {
 		PreferredUsername: username,
 		Name:              acc.Name,
 		Summary:           acc.Summary,
-		URL:               fmt.Sprintf("https://%s/api/users/%s/feed", host, username),
+		URL:               fmt.Sprintf("https://%s/api/users/%s/redirect", host, username),
 		Published:         acc.CreatedAt.Format(time.RFC3339),
 		Inbox:             fmt.Sprintf("https://%s/ap/%s/inbox", host, username),
 		PublicKey: PublicKey{

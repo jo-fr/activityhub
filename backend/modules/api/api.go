@@ -127,6 +127,7 @@ func (a *API) registerRoutes() {
 		})
 
 		r.Get("/users/{username}/feed", a.GetFeedWithUsername())
+		r.Get("/users/{username}/redirect", a.RedirectUser())
 
 	})
 

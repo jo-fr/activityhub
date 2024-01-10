@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -99,6 +100,17 @@ func (a *API) GetFeedWithUsername() http.HandlerFunc {
 		}
 
 		render.Success(r.Context(), externalmodel.ExternalFeed(feed, a.host), http.StatusOK, w, a.log)
+	}
+}
+
+// Redirect user is a workaround to link from a mastodoan instance to the web app
+func (a *API) RedirectUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		username := chi.URLParam(r, "username")
+		feedURL := fmt.Sprintf("https://%s/feed/%s", a.appHost, username)
+
+		http.Redirect(w, r, feedURL, http.StatusPermanentRedirect)
 	}
 }
 
