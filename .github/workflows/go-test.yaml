@@ -1,12 +1,6 @@
 name: Go test
 
-on:
-  pull_request:
-    branches:
-      - master
-    paths:
-      - "./backend/**"
-
+on: pull_request
 jobs:
   build:
     runs-on: ubuntu-latest
