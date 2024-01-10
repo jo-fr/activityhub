@@ -4,9 +4,8 @@ on:
     branches:
       - master
     paths:
-    paths:
-      - "app/**"
-      
+      - "backend/**"
+
   RUN_REGION: europe-west3
   SERVICE_NAME: activityhub
   IMAGE_PATH: docker.io/j0fr/activityhub
