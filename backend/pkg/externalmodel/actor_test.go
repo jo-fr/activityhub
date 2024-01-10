@@ -13,7 +13,6 @@ import (
 
 func TestExternalActor(t *testing.T) {
 	host := "example.com"
-	appHost := "https://app.example.com"
 	acc := models.Account{
 		BaseModel: sharedmodel.BaseModel{
 			ID:        "e8f25aca-b808-45c9-bbe6-08989844ff8e",
@@ -37,6 +36,7 @@ func TestExternalActor(t *testing.T) {
 		PreferredUsername: acc.PreferredUsername,
 		Name:              acc.Name,
 		Summary:           acc.Summary,
+		URL:               fmt.Sprintf("https://%s/api/users/%s/redirect", host, acc.PreferredUsername),
 		Published:         acc.CreatedAt.Format(time.RFC3339),
 		Inbox:             fmt.Sprintf("https://%s/ap/%s/inbox", host, acc.PreferredUsername),
 		PublicKey: externalmodel.PublicKey{
@@ -46,7 +46,7 @@ func TestExternalActor(t *testing.T) {
 		},
 	}
 
-	result := externalmodel.ExternalActor(host, appHost, acc)
+	result := externalmodel.ExternalActor(host, acc)
 
 	if !reflect.DeepEqual(result, expectedActor) {
 		t.Errorf("Expected %+v, got %+v", expectedActor, result)
