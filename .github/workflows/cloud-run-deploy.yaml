@@ -6,6 +6,7 @@ on:
     paths:
       - "backend/**"
 
+env:
   RUN_REGION: europe-west3
   SERVICE_NAME: activityhub
   IMAGE_PATH: docker.io/j0fr/activityhub
