@@ -5,13 +5,14 @@ on:
       - "**.go"
       - "**/go.mod"
       - "**/go.sum"
-
   push:
     branches:
       - master
     paths:
-      - "./backend/**"
-jobs:
+      - "**.go"
+      - "**/go.mod"
+      - "**/go.sum"
+
   build:
     runs-on: ubuntu-latest
     steps:
