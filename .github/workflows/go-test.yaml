@@ -9,6 +9,7 @@ on:
     paths:
       - "backend/**"
 
+jobs:
   build:
     runs-on: ubuntu-latest
     steps:
