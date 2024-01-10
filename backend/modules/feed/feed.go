@@ -90,7 +90,7 @@ func (h *Handler) AddNewFeed(ctx context.Context, feedurl string) (feed model.Fe
 
 		accountUsername := usernameFromFeedTitle(title)
 		name := fmt.Sprintf("%s ActivityHub Bot", title)
-		summary := fmt.Sprintf("This is the ActivityHub Bot of %s. This is NOT an offical account and is not related with the owners of the posted content. Posting entries of RSS feed.", title)
+		summary := fmt.Sprintf("This is the ActivityHub Bot of %s. This is NOT an official account and is not related with the owners of the posted content. Posting entries of RSS feed.", title)
 
 		ctxWithTx := e.GetCtxWithTx(ctx)
 		account, err := h.activitypub.CreateAccount(ctxWithTx, accountUsername, name, summary)
