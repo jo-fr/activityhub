@@ -35,7 +35,7 @@ func (a *API) getWebfinger() http.HandlerFunc {
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
-		} // test
+		}
 
 		render.Success(r.Context(), externalmodel.ExternalWebfinger(a.host, a.appHost, resource, actor), http.StatusOK, w, a.log)
 	}
