@@ -28,7 +28,7 @@ type PublicKey struct {
 	PublicKeyPem string `json:"publicKeyPem"`
 }
 
-func ExternalActor(host string, appHost string, acc models.Account) Actor {
+func ExternalActor(host string, acc models.Account) Actor {
 
 	username := acc.PreferredUsername
 

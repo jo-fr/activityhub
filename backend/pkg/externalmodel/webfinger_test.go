@@ -10,6 +10,7 @@ import (
 
 func TestExternalWebfinger(t *testing.T) {
 	host := "example.com"
+	appHost := "app.example.com"
 	resource := "user123"
 	acc := models.Account{
 		PreferredUsername: "user123",
@@ -23,10 +24,15 @@ func TestExternalWebfinger(t *testing.T) {
 				Type: "application/activity+json",
 				Href: fmt.Sprintf("https://%s/ap/%s", host, acc.PreferredUsername),
 			},
+			{
+				Rel:  "http://webfinger.net/rel/profile-page",
+				Type: "text/html",
+				Href: fmt.Sprintf("https://%s/feed/%s", appHost, acc.PreferredUsername),
+			},
 		},
 	}
 
-	result := externalmodel.ExternalWebfinger(host, resource, acc)
+	result := externalmodel.ExternalWebfinger(host, appHost, resource, acc)
 
 	if result.Subject != expectedWebfinger.Subject {
 		t.Errorf("Expected Subject %s, got %s", expectedWebfinger.Subject, result.Subject)

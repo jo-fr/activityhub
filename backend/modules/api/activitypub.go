@@ -37,7 +37,7 @@ func (a *API) getWebfinger() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalWebfinger(a.host, resource, actor), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalWebfinger(a.host, a.appHost, resource, actor), http.StatusOK, w, a.log)
 	}
 }
 
@@ -52,7 +52,7 @@ func (a *API) getActor() http.HandlerFunc {
 			return
 		}
 
-		render.Success(r.Context(), externalmodel.ExternalActor(a.host, a.appHost, actor), http.StatusOK, w, a.log)
+		render.Success(r.Context(), externalmodel.ExternalActor(a.host, actor), http.StatusOK, w, a.log)
 	}
 
 }
@@ -60,7 +60,7 @@ func (a *API) getActor() http.HandlerFunc {
 func (a *API) ReceiveActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		activity, err := httputil.UnmarshalBody[externalmodel.Activity](r.Body)
+		activity, err := httputil.UnmarshalRequestBody[externalmodel.Activity](r)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return

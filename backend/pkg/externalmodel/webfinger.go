@@ -18,7 +18,7 @@ type Links struct {
 	Template string `json:"template,omitempty"`
 }
 
-func ExternalWebfinger(host string, resource string, acc models.Account) Webfinger {
+func ExternalWebfinger(host string, appHost string, resource string, acc models.Account) Webfinger {
 	return Webfinger{
 		Subject: resource,
 		Links: []Links{
@@ -30,7 +30,7 @@ func ExternalWebfinger(host string, resource string, acc models.Account) Webfing
 			{
 				Rel:  "http://webfinger.net/rel/profile-page",
 				Type: "text/html",
-				Href: fmt.Sprintf("https://%s/ap/%s/tese", host, acc.PreferredUsername),
+				Href: fmt.Sprintf("https://%s/feed/%s", appHost, acc.PreferredUsername),
 			},
 		},
 	}
