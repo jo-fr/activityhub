@@ -2,16 +2,13 @@ name: Go test
 on:
   pull_request:
     paths:
-      - "**.go"
-      - "**/go.mod"
-      - "**/go.sum"
+      - "backend/**"
   push:
     branches:
       - master
     paths:
-      - "**.go"
-      - "**/go.mod"
-      - "**/go.sum"
+    paths:
+      - "backend/**"
 
   build:
     runs-on: ubuntu-latest
