@@ -1,5 +1,6 @@
 package errutil
 
+// TEST HALLO
 type ErrorType string
 
 const (
