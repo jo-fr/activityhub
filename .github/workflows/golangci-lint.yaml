@@ -2,12 +2,11 @@ name: golangci-lint
 on:
   pull_request
 
-
-  push:
-    branches:
-      - master
-    paths:
-      - "./backend/**"
+  # push:
+  #   branches:
+  #     - master
+  #   paths:
+  #     - "./backend/**"
 
 permissions:
   contents: read
