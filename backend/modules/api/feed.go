@@ -15,7 +15,7 @@ import (
 func (a *API) AddNewFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		req, err := httputil.UnmarshalBody[externalmodel.AddFeedRequest](r.Body)
+		req, err := httputil.UnmarshalRequestBody[externalmodel.AddFeedRequest](r)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return

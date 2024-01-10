@@ -2,11 +2,9 @@ package httputil_test
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
-	"reflect"
-	"strings"
+	"net/http"
 	"testing"
 
 	"github.com/jo-fr/activityhub/backend/pkg/util/httputil"
@@ -44,59 +42,141 @@ func TestSanitizeURL(t *testing.T) {
 		})
 	}
 }
-func TestUnmarshalBody(t *testing.T) {
-	type TestData struct {
-		Foo string `json:"foo"`
-		Bar int    `json:"bar"`
+
+func TestUnmarshalRequestBody(t *testing.T) {
+	type SampleStruct struct {
+		Message string `json:"message"`
 	}
 
-	testCases := []struct {
-		name        string
-		body        string
-		expected    TestData
-		errExpected bool
+	tests := []struct {
+		name             string
+		requestBody      string
+		expectedResult   SampleStruct
+		expectError      bool
+		expectedErrorMsg string
 	}{
 		{
-			name: "Valid JSON",
-			body: `{"foo": "hello", "bar": 42}`,
-			expected: TestData{
-				Foo: "hello",
-				Bar: 42,
+			name:        "Valid JSON",
+			requestBody: `{"message": "Hello, World!"}`,
+			expectedResult: SampleStruct{
+				Message: "Hello, World!",
 			},
+			expectError:      false,
+			expectedErrorMsg: "",
 		},
 		{
-			name:        "Empty body",
-			body:        "",
-			expected:    TestData{},
-			errExpected: true,
+			name:             "Invalid JSON",
+			requestBody:      `invalid json`,
+			expectedResult:   SampleStruct{},
+			expectError:      true,
+			expectedErrorMsg: "failed to unmarshal request body: invalid character 'i' looking for beginning of value",
 		},
 		{
-			name:        "Invalid JSON",
-			body:        `{"foo": "hello", "bar": "invalid"}`,
-			expected:    TestData{},
-			errExpected: true,
+			name:             "Empty Body",
+			requestBody:      "",
+			expectedResult:   SampleStruct{},
+			expectError:      true,
+			expectedErrorMsg: "failed to unmarshal request body: unexpected end of JSON input",
 		},
+		// Add more test cases as needed
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			body := io.NopCloser(strings.NewReader(tc.body))
-			result, err := httputil.UnmarshalBody[TestData](body)
-
-			if tc.errExpected && err != nil {
-				return
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a sample request with the specified body
+			request, err := http.NewRequest("POST", "http://example.com", bytes.NewBufferString(tt.requestBody))
+			if err != nil {
+				t.Fatalf("Error creating request: %v", err)
 			}
 
+			// Call the function
+			result, err := httputil.UnmarshalRequestBody[SampleStruct](request)
+
 			if err != nil {
+				if tt.expectError {
+					if err.Error() != tt.expectedErrorMsg {
+						t.Errorf("Unexpected error message. Got %s, want %s", err.Error(), tt.expectedErrorMsg)
+					}
+					return
+				}
+
 				t.Errorf("Unexpected error: %v", err)
 			}
 
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Expected %+v, got %+v", tc.expected, result)
+			// Check the unmarshaled result
+			if result != tt.expectedResult {
+				t.Errorf("Unexpected result. Got %+v, want %+v", result, tt.expectedResult)
 			}
 		})
 	}
 }
+
+func TestUnmarshalResponseBody(t *testing.T) {
+	type SampleStruct struct {
+		Message string `json:"message"`
+	}
+
+	tests := []struct {
+		name             string
+		requestBody      string
+		expectedResult   SampleStruct
+		expectError      bool
+		expectedErrorMsg string
+	}{
+		{
+			name:        "Valid JSON",
+			requestBody: `{"message": "Hello, World!"}`,
+			expectedResult: SampleStruct{
+				Message: "Hello, World!",
+			},
+			expectError:      false,
+			expectedErrorMsg: "",
+		},
+		{
+			name:             "Invalid JSON",
+			requestBody:      `invalid json`,
+			expectedResult:   SampleStruct{},
+			expectError:      true,
+			expectedErrorMsg: "failed to unmarshal request body: invalid character 'i' looking for beginning of value",
+		},
+		{
+			name:             "Empty Body",
+			requestBody:      "",
+			expectedResult:   SampleStruct{},
+			expectError:      true,
+			expectedErrorMsg: "failed to unmarshal request body: unexpected end of JSON input",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			resp := &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString(tt.requestBody)),
+			}
+
+			// Call the function
+			result, err := httputil.UnmarshalResponsetBody[SampleStruct](resp)
+
+			if err != nil {
+				if tt.expectError {
+					if err.Error() != tt.expectedErrorMsg {
+						t.Errorf("Unexpected error message. Got %s, want %s", err.Error(), tt.expectedErrorMsg)
+					}
+					return
+				}
+
+				t.Errorf("Unexpected error: %v", err)
+			}
+
+			// Check the unmarshaled result
+			if result != tt.expectedResult {
+				t.Errorf("Unexpected result. Got %+v, want %+v", result, tt.expectedResult)
+			}
+		})
+	}
+}
+
 func TestStatusOK(t *testing.T) {
 	testCases := []struct {
 		statusCode int
@@ -119,55 +199,49 @@ func TestStatusOK(t *testing.T) {
 		})
 	}
 }
-func TestGetBody(t *testing.T) {
 
-	testCases := []struct {
-		name     string
-		body     io.ReadCloser
-		expected *bytes.Buffer
-		err      error
+func TestCopyBody(t *testing.T) {
+	tests := []struct {
+		name          string
+		requestBody   string
+		expectedError error
+		expectedBody  string
 	}{
 		{
-			name:     "Valid body",
-			body:     io.NopCloser(strings.NewReader("test")),
-			expected: bytes.NewBufferString("test"),
-			err:      nil,
+			name:          "Valid Case",
+			requestBody:   "Hello, World!",
+			expectedError: nil,
+			expectedBody:  "Hello, World!",
 		},
 		{
-			name:     "Empty body",
-			body:     io.NopCloser(strings.NewReader("")),
-			expected: bytes.NewBufferString(""),
-			err:      nil,
+			name:          "Empty Body",
+			requestBody:   "",
+			expectedError: nil,
+			expectedBody:  "",
 		},
-		{
-			name:     "Error reading body",
-			body:     io.NopCloser(errorReader{}),
-			expected: nil,
-			err:      errors.New("error reading body"),
-		},
+		// Add more test cases as needed
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result, err := httputil.GetBody(tc.body)
-
-			if err != nil && tc.err == nil {
-				t.Errorf("Unexpected error: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a sample request with the specified body
+			request, err := http.NewRequest("POST", "http://example.com", bytes.NewBufferString(tt.requestBody))
+			if err != nil {
+				t.Fatalf("Error creating request: %v", err)
 			}
 
-			if err == nil && tc.err != nil {
-				t.Errorf("Expected error: %v, got nil", tc.err)
+			// Call the function
+			resultBuffer, err := httputil.CopyBody(request)
+
+			// Check for errors
+			if (err != nil && tt.expectedError == nil) || (err == nil && tt.expectedError != nil) || (err != nil && err.Error() != tt.expectedError.Error()) {
+				t.Errorf("Unexpected error. Got %v, want %v", err, tt.expectedError)
 			}
 
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Expected %+v, got %+v", tc.expected, result)
+			// Check the content of the body
+			if resultBuffer != nil && resultBuffer.String() != tt.expectedBody {
+				t.Errorf("Unexpected body content. Got %s, want %s", resultBuffer.String(), tt.expectedBody)
 			}
 		})
 	}
-}
-
-type errorReader struct{}
-
-func (er errorReader) Read(p []byte) (n int, err error) {
-	return 0, errors.New("error reading body")
 }

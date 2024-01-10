@@ -50,11 +50,7 @@ func (r *Request) Do() (*http.Response, error) {
 
 // GetBody reads the request body and returns it as a bytes.Buffer. The request body is then reset to its original state.
 func (r *Request) GetBody() (*bytes.Buffer, error) {
-	body, err := r.request.GetBody()
-	if err != nil {
-		return nil, err
-	}
-	return httputil.GetBody(body)
+	return httputil.CopyBody(r.request)
 }
 
 // Sign adds required headers and signs the request with the given private key.

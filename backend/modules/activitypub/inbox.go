@@ -138,7 +138,7 @@ func returnAcceptActivity(ctx context.Context, account models.Account, actor str
 	defer resp.Body.Close()
 
 	if !httputil.StatusOK(resp.StatusCode) {
-		errBody, err := httputil.UnmarshalBody[map[string]any](resp.Body)
+		errBody, err := httputil.UnmarshalResponsetBody[map[string]any](resp)
 		if err != nil {
 			return errors.Wrapf(err, "failed to unmarshal error response body. Statuscode: %v", resp.StatusCode)
 		}
@@ -159,7 +159,7 @@ func GetInboxURL(actorURI string) (string, error) {
 		return "", errors.Wrap(err, "failed to get actor")
 	}
 
-	responseMap, err := httputil.UnmarshalBody[map[string]any](resp.Body)
+	responseMap, err := httputil.UnmarshalResponsetBody[map[string]any](resp)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal response body")
 	}

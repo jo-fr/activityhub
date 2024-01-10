@@ -60,7 +60,7 @@ func (a *API) getActor() http.HandlerFunc {
 func (a *API) ReceiveActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		activity, err := httputil.UnmarshalBody[externalmodel.Activity](r.Body)
+		activity, err := httputil.UnmarshalRequestBody[externalmodel.Activity](r)
 		if err != nil {
 			render.Error(r.Context(), err, w, a.log)
 			return
