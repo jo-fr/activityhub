@@ -1,10 +1,5 @@
 name: Build and Deploy
-on:
-  push:
-    branches:
-      - master
-      paths:
-      - "./backend/**"
+on: push
 
 env:
   RUN_REGION: europe-west3
