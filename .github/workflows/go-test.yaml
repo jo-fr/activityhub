@@ -1,9 +1,10 @@
 name: Go test
-
 on:
   pull_request:
     paths:
-      - "./backend/**"
+      - "**.go"
+      - "**/go.mod"
+      - "**/go.sum"
 
   push:
     branches:
