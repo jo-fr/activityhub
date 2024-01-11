@@ -20,6 +20,8 @@ $ cd backend && mv .env.example .env
 $ cd app && npm install
 ```
 
+Make sure you have go 1.21 or higher and node 21 or higher installed
+
 ## local testing
 
 to run everything in docker run
