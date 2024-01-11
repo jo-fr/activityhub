@@ -5,11 +5,18 @@ import (
 	"net/http"
 
 	"github.com/go-chi/cors"
+	"github.com/jo-fr/activityhub/backend/pkg/config"
 )
 
-func CORSHandler(appHost string) func(h http.Handler) http.Handler {
+func CORSHandler(config config.Config) func(h http.Handler) http.Handler {
+
+	var origins []string
+	origins = append(origins, fmt.Sprintf("https://%s", config.AppHost))
+	if config.Environment.IsLocal() {
+		origins = append(origins, "http://localhost:5173")
+	}
 	return cors.Handler(cors.Options{
-		AllowedOrigins:   []string{fmt.Sprintf("https://%s", appHost)},
+		AllowedOrigins:   origins,
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,

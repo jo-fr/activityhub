@@ -89,7 +89,7 @@ func (a *API) registerMiddlewares(l *log.Logger, config config.Config) {
 	a.Use(chiMiddleware.RequestID)
 	a.Use(middleware.Logger(l))
 	a.Use(chiMiddleware.Recoverer)
-	a.Use(middleware.CORSHandler(config.AppHost))
+	a.Use(middleware.CORSHandler(config))
 
 	// add default header
 	a.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))

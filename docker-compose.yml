@@ -44,7 +44,8 @@ services:
       dockerfile: "./Dockerfile"
     image: "activityhub_app"
     ports:
-      - "5173:8080"
+      - "5173:80"
+
 volumes:
   db:
     driver: local
