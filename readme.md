@@ -46,7 +46,6 @@ If you want to start the web app outside of docker with a dev server
 
 ```
 $ cd app
-$ sdocker ru npm install
 $ npm run dev
 ```
 
