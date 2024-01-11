@@ -265,7 +265,13 @@ func builtPost(title string, description string, link string) string {
 	title = "<strong>" + util.RemoveHTMLTags(title) + "</strong><br/>"
 	description = strings.ReplaceAll(description, "\n", " ")
 	description = util.RemoveHTMLTags(description)
-	link = fmt.Sprintf("<a href=\"%s\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\">%s...</a>", link, link[:27])
+
+	// Mastodon only displays the first 27 characters of a link
+	if len(link) > 27 {
+		link = fmt.Sprintf("<a href=\"%s\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\">%s...</a>", link, link[:27])
+	} else {
+		link = fmt.Sprintf("<a href=\"%s\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\">%s</a>", link, link)
+	}
 
 	content := title + description
 	content = util.TrimStringLength(content, 500-30)
