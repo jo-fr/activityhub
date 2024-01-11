@@ -16,7 +16,7 @@ ActivityHub merges diverse content streams (news, social media, videos) into a u
 After cloning the repo there a a few steps that you should run:
 
 ```
-$ mv .env.example .env
+$ cd backend && mv .env.example .env
 $ cd app && npm install
 ```
 
@@ -49,3 +49,11 @@ $ npm run dev
 ```
 
 - web app ist listening on `http://localhost:5173`
+
+If you want to interact with Activity Pub services your local api needs to be addressable from the web. You can do that by using [ngrok](https://ngrok.com/). Run:
+
+```
+$ ngrok 8080
+```
+
+Take the public URL you are getting and put it into the `backend/.env` file as `HOST=ngrok.host`. Its important to leave out the https:// in the beginning.
