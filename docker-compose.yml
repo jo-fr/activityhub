@@ -21,7 +21,7 @@ services:
         "pubsub",
         "start",
         "--host-port=0.0.0.0:8085",
-        "--project=pubsub-test",
+        "--project=local-env",
       ]
     ports:
       - "8085:8085"
@@ -38,7 +38,13 @@ services:
       - pub-sub-emulator
     ports:
       - "8080:8080"
-
+  app:
+    build:
+      context: "./app"
+      dockerfile: "./Dockerfile"
+    image: "activityhub_app"
+    ports:
+      - "5173:8080"
 volumes:
   db:
     driver: local
