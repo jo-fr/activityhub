@@ -16,7 +16,7 @@ These are the endpoints that a relavant for the activity pub communication
 
 Endpoint for user discovery
 
-Reponse:
+Response:
 
 ```json
 200 OK
@@ -45,7 +45,7 @@ Reponse:
 
 Get data about user
 
-Reponse:
+Response:
 
 ```json
 200 OK
@@ -81,7 +81,7 @@ Reponse:
 
 Get followings of user. This endpoint is just implemented to meet the requirements. Its always returning 0 because all users on this instance are bots and cant follow other users.
 
-Reponse:
+Response:
 
 ```json
 200 OK
@@ -102,7 +102,7 @@ Reponse:
 
 Get followers of user.
 
-Reponse:
+Response:
 
 ```json
 200 OK
@@ -134,7 +134,7 @@ Request example:
 }
 ```
 
-Reponse:
+Response:
 
 ```json
 202 Accepted
@@ -160,7 +160,7 @@ Request example:
 }
 ```
 
-Reponse:
+Response:
 
 ```json
 201 Created
@@ -192,7 +192,7 @@ Reponse:
 
 Add new feed. account automatically gets created.
 
-Reponse:
+Response:
 
 ```json
 200 OK
@@ -228,7 +228,7 @@ Reponse:
 /api/feeds/a4baf330-55a9-45af-a50b-1441e17c835c
 ```
 
-Reponse:
+Response:
 
 ```json
 200 OK
@@ -258,7 +258,7 @@ Reponse:
 /api/feeds/a4baf330-55a9-45af-a50b-1441e17c835c/status?offset=0&limit=10
 ```
 
-Reponse:
+Response:
 
 ```json
 200 OK
@@ -284,7 +284,7 @@ Reponse:
 
 Add new feed. account automatically gets created.
 
-Reponse:
+Response:
 
 ```json
 200 OK
