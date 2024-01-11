@@ -17,7 +17,9 @@ After cloning the repo there a a few steps that you should run:
 
 ```
 $ cd backend && mv .env.example .env
-$ cd app && npm install
+$ cd app
+$ mv .env.example .env
+$ npm install
 ```
 
 Make sure you have go 1.21 or higher and node 21 or higher installed
