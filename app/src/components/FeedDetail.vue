@@ -3,6 +3,7 @@
     <h1>{{ data?.feed?.name }}</h1>
     <div clas="links">
       <div>
+        Copy this account handle into the search of your mastodon account to follow:
         {{ data?.feed?.account.uri }}
       </div>
       <div>
