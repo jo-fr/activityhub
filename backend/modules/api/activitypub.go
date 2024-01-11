@@ -16,7 +16,7 @@ import (
 
 // api errors
 var (
-	ErrWrongURI    = errutil.NewError(errutil.TypeInvalidRequestBody, "uri of actor and host do not match")
+	ErrWrongURI    = errutil.NewError(errutil.TypeBadRequest, "uri of actor and host do not match")
 	ErrWrongFormat = errutil.NewError(errutil.TypeBadRequest, "no acct: in resource")
 )
 

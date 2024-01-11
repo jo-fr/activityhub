@@ -13,7 +13,6 @@ func TestHTTPStatusCode(t *testing.T) {
 		expected int
 	}{
 		{err: errutil.AnnotatedError{Type: errutil.TypeNotFound}, expected: http.StatusNotFound},
-		{err: errutil.AnnotatedError{Type: errutil.TypeInvalidRequestBody}, expected: http.StatusBadRequest},
 		{err: errutil.AnnotatedError{Type: errutil.TypeMissingHeader}, expected: http.StatusBadRequest},
 		{err: errutil.AnnotatedError{Type: errutil.TypeBadRequest}, expected: http.StatusBadRequest},
 		{err: errutil.AnnotatedError{Type: errutil.TypeAlreadyExists}, expected: http.StatusBadRequest},
